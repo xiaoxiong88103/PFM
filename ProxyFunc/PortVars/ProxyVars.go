@@ -6,12 +6,12 @@ import (
 )
 
 type PortForwardingRule struct {
-	ID         string `json:"id"`
-	Type       string `json:"type"` // tcp or udp
-	RemoteIP   string `json:"remote_ip"`
-	RemotePort string `json:"remote_port"`
-	LocalPort  string `json:"local_port"`
-	Comment    string `json:"comment"`
+	ID         string `json:"id"`          //获取ID索引用的
+	Type       string `json:"type"`        // tcp or udp
+	RemoteIP   string `json:"remote_ip"`   // 获取远程IP字段
+	RemotePort string `json:"remote_port"` //获取远程端口转发的要
+	LocalPort  string `json:"local_port"`  //本地的端口绑定
+	Comment    string `json:"comment"`     //备注接口负责备注作用的
 }
 
 var (
