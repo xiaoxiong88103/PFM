@@ -1,7 +1,8 @@
 package StartProxy
 
 import (
-	"PFM/ProxyFunc/PortVars"
+	"PFM/ProxyFunc/Vars"
+	"PFM/ProxyFunc/WhiteList"
 	"io"
 	"log"
 	"net"
@@ -9,8 +10,8 @@ import (
 )
 
 // 开启tcp规则转发
-func StartTCPForward(rule PortVars.PortForwardingRule) {
-	defer PortVars.Proxy_wg.Done()
+func StartTCPForward(rule Vars.PortForwardingRule) {
+	defer Vars.Proxy_wg.Done()
 
 	// 尝试监听本地端口
 	listener, err := net.Listen("tcp", ":"+rule.LocalPort)
@@ -20,16 +21,16 @@ func StartTCPForward(rule PortVars.PortForwardingRule) {
 	}
 
 	// 锁住 tcpListeners map，防止并发写入引发错误
-	PortVars.TcpListenersMu.Lock()
-	PortVars.TcpListeners[rule.ID] = listener
-	PortVars.TcpListenersMu.Unlock()
+	Vars.TcpListenersMu.Lock()
+	Vars.TcpListeners[rule.ID] = listener
+	Vars.TcpListenersMu.Unlock()
 
 	// 确保 listener 关闭时也删除 map 中的记录
 	defer func() {
 		listener.Close()
-		PortVars.TcpListenersMu.Lock()
-		delete(PortVars.TcpListeners, rule.ID)
-		PortVars.TcpListenersMu.Unlock()
+		Vars.TcpListenersMu.Lock()
+		delete(Vars.TcpListeners, rule.ID)
+		Vars.TcpListenersMu.Unlock()
 	}()
 
 	log.Printf("TCP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
@@ -43,12 +44,22 @@ func StartTCPForward(rule PortVars.PortForwardingRule) {
 			log.Printf("接受客户端连接失败: %v", err)
 			continue
 		}
+
+		// 获取客户端 IP
+		clientAddr := clientConn.RemoteAddr().(*net.TCPAddr).IP.String()
+		// 校验 IP 是否在白名单中
+		if !WhiteList.IsIPAllowed(rule.LocalPort, clientAddr) {
+			log.Printf("拒绝连接，客户端IP %s 不在端口 %s 的白名单中", clientAddr, rule.LocalPort)
+			clientConn.Close()
+			continue
+		}
+
 		go handleTCPConnection(clientConn, rule)
 	}
 }
 
 // 处理tcp转发逻辑
-func handleTCPConnection(clientConn net.Conn, rule PortVars.PortForwardingRule) {
+func handleTCPConnection(clientConn net.Conn, rule Vars.PortForwardingRule) {
 	defer clientConn.Close()
 
 	var remoteConn net.Conn

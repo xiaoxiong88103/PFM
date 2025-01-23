@@ -1,10 +1,11 @@
-package PortVars
+package Vars
 
 import (
 	"net"
 	"sync"
 )
 
+// 转发字段
 type PortForwardingRule struct {
 	ID         string `json:"id"`          //获取ID索引用的
 	Type       string `json:"type"`        // tcp or udp
@@ -14,6 +15,7 @@ type PortForwardingRule struct {
 	Comment    string `json:"comment"`     //备注接口负责备注作用的
 }
 
+// 转发逻辑
 var (
 	ConfigFilePath = "/opt/port_forwarding_rules.json"
 	Rules          = make(map[string]PortForwardingRule) // 初始化全局规则

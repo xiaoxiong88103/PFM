@@ -1,8 +1,8 @@
-package DelProxy
+package Proxy
 
 import (
-	"PFM/ProxyFunc/PortVars"
 	"PFM/ProxyFunc/SaveJson"
+	"PFM/ProxyFunc/Vars"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -14,27 +14,27 @@ import (
 //func processDeleteQueue() {
 //	for id := range deleteQueue {
 //		// 处理删除逻辑
-//		PortVars.RulesMu.Lock()
-//		if rule, exists := PortVars.Rules[id]; exists {
+//		Vars.RulesMu.Lock()
+//		if rule, exists := Vars.Rules[id]; exists {
 //			// 停止转发
 //			if rule.Type == "tcp" {
-//				if listener, ok := PortVars.TcpListeners[id]; ok {
+//				if listener, ok := Vars.TcpListeners[id]; ok {
 //					listener.Close()
 //				}
 //			} else if rule.Type == "udp" {
-//				PortVars.UdpConnsMu.Lock()
-//				if conn, ok := PortVars.UdpConns[id]; ok {
+//				Vars.UdpConnsMu.Lock()
+//				if conn, ok := Vars.UdpConns[id]; ok {
 //					conn.Close()
 //				}
-//				PortVars.UdpConnsMu.Unlock()
+//				Vars.UdpConnsMu.Unlock()
 //			}
 //
 //			time.Sleep(1 * time.Millisecond) // 延迟1毫秒
 //			// 从规则列表中删除
-//			delete(PortVars.Rules, id)
+//			delete(Vars.Rules, id)
 //		}
-//		PortVars.RulesMu.Unlock()
-//		PortVars.Proxy_wg.Done() // 删除任务完成，减少等待组计数
+//		Vars.RulesMu.Unlock()
+//		Vars.Proxy_wg.Done() // 删除任务完成，减少等待组计数
 //	}
 //}
 //
@@ -55,7 +55,7 @@ import (
 //
 //	// 遍历所有要删除的 ID
 //	for _, id := range idsToDelete {
-//		PortVars.Proxy_wg.Add(1) // 增加等待组计数
+//		Vars.Proxy_wg.Add(1) // 增加等待组计数
 //
 //		// 将任务添加到删除队列
 //		deleteQueue <- id
@@ -65,10 +65,10 @@ import (
 //	go processDeleteQueue()
 //
 //	// 等待所有删除任务完成
-//	PortVars.Proxy_wg.Wait()
+//	Vars.Proxy_wg.Wait()
 //
 //	// 保存修改后的规则到文件
-//	if err := SaveJson.SavePortForwardingRules(PortVars.Rules); err != nil {
+//	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
 //		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 //		return
 //	}
@@ -91,26 +91,26 @@ func DeletePortForward(c *gin.Context) {
 
 	id := req.ID // 直接使用传入的 ID
 
-	PortVars.RulesMu.Lock()
-	defer PortVars.RulesMu.Unlock() // 确保在函数退出时释放锁
+	Vars.RulesMu.Lock()
+	defer Vars.RulesMu.Unlock() // 确保在函数退出时释放锁
 
-	if rule, exists := PortVars.Rules[id]; exists {
+	if rule, exists := Vars.Rules[id]; exists {
 		// 停止转发
 		if rule.Type == "tcp" {
-			if listener, ok := PortVars.TcpListeners[id]; ok {
+			if listener, ok := Vars.TcpListeners[id]; ok {
 				listener.Close()
 			}
 		} else if rule.Type == "udp" {
-			PortVars.UdpConnsMu.Lock()
-			if conn, ok := PortVars.UdpConns[id]; ok {
+			Vars.UdpConnsMu.Lock()
+			if conn, ok := Vars.UdpConns[id]; ok {
 				conn.Close()
 			}
-			PortVars.UdpConnsMu.Unlock()
+			Vars.UdpConnsMu.Unlock()
 		}
 
 		time.Sleep(1 * time.Millisecond) // 延迟1毫秒
 		// 从规则列表中删除
-		delete(PortVars.Rules, id)
+		delete(Vars.Rules, id)
 	} else {
 		// 如果 ID 不存在，返回错误信息
 		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "规则不存在", "data": nil})
@@ -118,7 +118,7 @@ func DeletePortForward(c *gin.Context) {
 	}
 
 	// 保存修改后的规则到文件
-	if err := SaveJson.SavePortForwardingRules(PortVars.Rules); err != nil {
+	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 		return
 	}

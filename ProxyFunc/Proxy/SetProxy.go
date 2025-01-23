@@ -1,16 +1,16 @@
-package ProxyRoute
+package Proxy
 
 import (
-	"PFM/ProxyFunc/PortVars"
 	"PFM/ProxyFunc/SaveJson"
 	"PFM/ProxyFunc/StartProxy"
+	"PFM/ProxyFunc/Vars"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func SetPortForward(c *gin.Context) {
-	var req PortVars.PortForwardingRule
+	var req Vars.PortForwardingRule
 
 	// 解析并绑定请求体
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -19,8 +19,8 @@ func SetPortForward(c *gin.Context) {
 	}
 
 	// 检查并初始化 rules
-	if PortVars.Rules == nil {
-		PortVars.Rules = make(map[string]PortVars.PortForwardingRule)
+	if Vars.Rules == nil {
+		Vars.Rules = make(map[string]Vars.PortForwardingRule)
 	}
 
 	// 校验请求体字段
@@ -31,23 +31,23 @@ func SetPortForward(c *gin.Context) {
 
 	// 1. **先检查本地端口冲突**:
 	//    如果已有相同类型的转发规则使用了相同的本地端口，则返回冲突
-	PortVars.RulesMu.RLock() // 读锁
-	for _, existingRule := range PortVars.Rules {
+	Vars.RulesMu.RLock() // 读锁
+	for _, existingRule := range Vars.Rules {
 		if existingRule.Type == req.Type && existingRule.LocalPort == req.LocalPort {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code": 1,
 				"msg":  fmt.Sprintf("本地端口 %s 已被占用，请更换端口", req.LocalPort),
 				"data": nil,
 			})
-			PortVars.RulesMu.RUnlock() // 别忘了在 return 之前释放读锁
+			Vars.RulesMu.RUnlock() // 别忘了在 return 之前释放读锁
 			return
 		}
 	}
-	PortVars.RulesMu.RUnlock()
+	Vars.RulesMu.RUnlock()
 
 	// 检查规则是否已存在
-	if _, exists := PortVars.Rules[req.ID]; exists {
-		fmt.Println("已存在的规则:", PortVars.Rules[req.ID])
+	if _, exists := Vars.Rules[req.ID]; exists {
+		fmt.Println("已存在的规则:", Vars.Rules[req.ID])
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "规则已存在", "data": nil})
 		return
 	}
@@ -56,8 +56,8 @@ func SetPortForward(c *gin.Context) {
 	StartForwarding(req)
 
 	// 保存规则到内存和文件
-	PortVars.Rules[req.ID] = req
-	if err := SaveJson.SavePortForwardingRules(PortVars.Rules); err != nil {
+	Vars.Rules[req.ID] = req
+	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 		return
 	}
@@ -67,7 +67,7 @@ func SetPortForward(c *gin.Context) {
 }
 
 // 开启转发的规则
-func StartForwarding(rule PortVars.PortForwardingRule) {
+func StartForwarding(rule Vars.PortForwardingRule) {
 	if rule.Type == "tcp" {
 		go StartProxy.StartTCPForward(rule)
 	} else if rule.Type == "udp" {
