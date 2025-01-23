@@ -11,7 +11,6 @@ import (
 
 // 开启tcp规则转发
 func StartTCPForward(rule Vars.PortForwardingRule) {
-	defer Vars.Proxy_wg.Done()
 
 	// 尝试监听本地端口
 	listener, err := net.Listen("tcp", ":"+rule.LocalPort)

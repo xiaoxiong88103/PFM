@@ -17,7 +17,7 @@ type PortForwardingRule struct {
 
 // 转发逻辑
 var (
-	ConfigFilePath = "/opt/port_forwarding_rules.json"
+	ConfigFilePath = "/opt/PFM/port_forwarding_rules.json"
 	Rules          = make(map[string]PortForwardingRule) // 初始化全局规则
 	RulesMu        sync.RWMutex                          // 用于保护 rules 的读写锁
 	Proxy_wg       sync.WaitGroup                        // 用于管理 goroutines

@@ -1,7 +1,7 @@
 package Vars
 
 var (
-	WhiteList_files = "/opt/WhiteList.ini"
+	WhiteList_files = "/opt/PFM/WhiteList.ini"
 	WhiteList       = make(map[string][]string)
 )
 
