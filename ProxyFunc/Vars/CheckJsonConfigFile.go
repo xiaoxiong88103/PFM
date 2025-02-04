@@ -83,6 +83,12 @@ func CheckAndCreateINI(filePath string) error {
 		log.Println("配置文件中缺少 [black_list] 字段，已补充")
 	}
 
+	// 检查 [ProxyNumber] 是否存在
+	if !cfg.HasSection("ProxyNumber") {
+		cfg.NewSection("ProxyNumber")
+		log.Println("配置文件中缺少 [ProxyNumber] 字段，已补充")
+	}
+
 	// 保存修改后的配置文件
 	if err := cfg.SaveTo(filePath); err != nil {
 		return err
