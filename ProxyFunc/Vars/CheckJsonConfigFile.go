@@ -56,6 +56,7 @@ func CheckAndCreateINI(filePath string) error {
 		// 添加默认的 [white_list] 和 [black_list] 字段
 		cfg.NewSection("white_list")
 		cfg.NewSection("black_list")
+		cfg.NewSection("ProxyNumber")
 
 		// 保存到文件
 		if err := cfg.SaveTo(filePath); err != nil {
