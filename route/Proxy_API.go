@@ -26,6 +26,8 @@ func Proxy_Route(r *gin.Engine) {
 	whiteList.POST("/add", WhiteList.AddWhiteListHandler)
 	// 查看白名单路由
 	whiteList.GET("/list", WhiteList.ViewWhiteListHandler)
+	// 查看全部白名单路由
+	whiteList.GET("/list/all", WhiteList.ViewAllWhiteListsHandler)
 	// 删除白名单路由
 	whiteList.POST("/delete", WhiteList.DeleteWhiteListHandler)
 	//白名单的限制端口次数查询

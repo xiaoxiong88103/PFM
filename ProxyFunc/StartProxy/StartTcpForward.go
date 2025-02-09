@@ -55,6 +55,8 @@ func StartTCPForward(rule Vars.PortForwardingRule) {
 
 		//查询端口是否超过限制
 		if WhiteList.IsPortWithinLimit(Vars.WhiteList_files, rule.LocalPort) {
+
+		} else {
 			log.Printf("拒绝连接端口 %s 的限制过了 无法访问了", rule.LocalPort)
 			clientConn.Close()
 			continue

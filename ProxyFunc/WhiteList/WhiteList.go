@@ -146,6 +146,34 @@ func ViewWhiteListHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "获取成功", "data": ipList})
 }
 
+// ViewAllWhiteListsHandler 查询全部白名单的处理函数
+func ViewAllWhiteListsHandler(c *gin.Context) {
+	// 加载配置文件
+	cfg, err := ini.Load(Vars.WhiteList_files)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
+		return
+	}
+
+	// 获取白名单部分
+	section, err := cfg.GetSection("white_list")
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "未找到白名单部分", "data": nil})
+		return
+	}
+
+	// 遍历所有端口的白名单
+	allWhiteLists := make(map[string][]string)
+	for _, key := range section.Keys() {
+		// 获取每个端口的白名单 IP 列表
+		ipList := strings.Split(key.Value(), ",")
+		allWhiteLists[key.Name()] = ipList
+	}
+
+	// 返回所有端口的白名单
+	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "获取成功", "data": allWhiteLists})
+}
+
 // DeleteWhiteListHandler 删除白名单的处理函数
 func DeleteWhiteListHandler(c *gin.Context) {
 	// 绑定请求体到 WhiteList_Json
