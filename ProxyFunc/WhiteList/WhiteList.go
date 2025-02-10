@@ -2,21 +2,28 @@ package WhiteList
 
 import (
 	"PFM/ProxyFunc/Vars"
-	"github.com/gin-gonic/gin"
-	"github.com/go-ini/ini"
+	"PFM/util"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-ini/ini"
 )
 
 // 初始化时加载白名单
 func LoadWhiteList() error {
-	cfg, err := ini.Load(Vars.WhiteList_files)
+	path, err := util.InitConfigFiles(Vars.WhiteListFilePath, Vars.WhiteListWindowsFilePath, "")
 	if err != nil {
 		return err
 	}
-
-	Vars.WhiteList = make(map[string][]string) // 清空旧数据
+	Vars.WhiteListFilePath = path
+	// 加载配置文件
+	cfg, err := ini.Load(Vars.WhiteListFilePath)
+	if err != nil {
+		return err
+	}
+	Vars.WhiteList = make(map[string][]string)
 	if section, err := cfg.GetSection("white_list"); err == nil {
 		for key, value := range section.KeysHash() {
 			Vars.WhiteList[key] = strings.Split(value, ",")
@@ -54,7 +61,7 @@ func AddWhiteListHandler(c *gin.Context) {
 	newIPs := strings.Split(Vars.WhiteList_Json.IP, ",")
 
 	// 加载配置文件
-	cfg, err := ini.Load(Vars.WhiteList_files)
+	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
@@ -100,7 +107,7 @@ func AddWhiteListHandler(c *gin.Context) {
 		section.Key(port).SetValue(strings.Join(allIPs, ","))
 
 		// 保存到配置文件
-		if err := cfg.SaveTo(Vars.WhiteList_files); err != nil {
+		if err := cfg.SaveTo(Vars.WhiteListFilePath); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
 			return
 		}
@@ -126,7 +133,7 @@ func ViewWhiteListHandler(c *gin.Context) {
 	}
 
 	// 加载配置文件
-	cfg, err := ini.Load(Vars.WhiteList_files)
+	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
@@ -146,34 +153,6 @@ func ViewWhiteListHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "获取成功", "data": ipList})
 }
 
-// ViewAllWhiteListsHandler 查询全部白名单的处理函数
-func ViewAllWhiteListsHandler(c *gin.Context) {
-	// 加载配置文件
-	cfg, err := ini.Load(Vars.WhiteList_files)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
-		return
-	}
-
-	// 获取白名单部分
-	section, err := cfg.GetSection("white_list")
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "未找到白名单部分", "data": nil})
-		return
-	}
-
-	// 遍历所有端口的白名单
-	allWhiteLists := make(map[string][]string)
-	for _, key := range section.Keys() {
-		// 获取每个端口的白名单 IP 列表
-		ipList := strings.Split(key.Value(), ",")
-		allWhiteLists[key.Name()] = ipList
-	}
-
-	// 返回所有端口的白名单
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "获取成功", "data": allWhiteLists})
-}
-
 // DeleteWhiteListHandler 删除白名单的处理函数
 func DeleteWhiteListHandler(c *gin.Context) {
 	// 绑定请求体到 WhiteList_Json
@@ -186,7 +165,7 @@ func DeleteWhiteListHandler(c *gin.Context) {
 	deleteIPs := strings.Split(Vars.WhiteList_Json.IP, ",")
 
 	// 加载配置文件
-	cfg, err := ini.Load(Vars.WhiteList_files)
+	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
@@ -235,7 +214,7 @@ func DeleteWhiteListHandler(c *gin.Context) {
 		section.DeleteKey(port) // 如果删除后没有 IP，移除该端口的白名单
 	}
 
-	if err := cfg.SaveTo(Vars.WhiteList_files); err != nil {
+	if err := cfg.SaveTo(Vars.WhiteListFilePath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
 		return
 	}

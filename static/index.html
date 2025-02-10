@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!-- saved from url=(0073)https://orderadmintest.chaoniu.top/upload/index.html?ins_id=63&user_id=28 -->
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        transition: 0.5s;
+        user-select: none;
+      }
+      body,
+      #app {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+    <title></title>
+    <script src="./js/vconsole.min.js"></script>
+    <script>
+      var vConsole = new window.VConsole();
+    </script>
+    <script src="./js/vue.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="./js/elementui.js"></script>
+    <script src="./api/axios.js"></script>
+    <!-- <script src="./js/vant.min.js"></script> -->
+    <link rel="stylesheet" href="./css/elementui.css" />
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="./windi.css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <!-- layout -->
+      <div class="w-full h-full flex">
+        <div class="w-240px h-full">
+          <div class="w-full h-60px nav-title flex">路由面板</div>
+          <el-menu class="el-menu-vertical-demo" @select="navSelect">
+            <el-menu-item-group>
+              <span slot="title">基础功能</span>
+              <el-menu-item index="1">代理配置</el-menu-item>
+              <el-menu-item index="3">白名单配置</el-menu-item>
+            </el-menu-item-group>
+          </el-menu>
+        </div>
+        <div class="w-full h-full bg-red-900 overflow-y-auto">
+          <!-- pages -->
+          <!-- 代理配置 -->
+          <div class="w-full h-100vh bg-red-400" v-if="activeNavArrow == 1">
+            <!-- .w-full -->
+            <el-table :data="proxy.list" style="width: 100%">
+              <el-table-column prop="id" label="索引"> </el-table-column>
+              <el-table-column prop="type" label="转发类型:TCP/UDP">
+                <template slot-scope="scope">
+                  <el-popover trigger="hover" placement="top">
+                    <p>转发类型:TCP协议/UDP协议</p>
+                    <div slot="reference" class="name-wrapper">
+                      <el-tag size="medium">{{ scope.row.type }}</el-tag>
+                    </div>
+                  </el-popover>
+                </template>
+              </el-table-column>
+              <el-table-column label="远程IP">
+                <template slot-scope="scope">
+                  <el-popover trigger="hover" placement="top">
+                    <p>远程映射:{{scope.row.remote_ip}}:{{ scope.row.remote_port }}</p>
+                    <div slot="reference" class="name-wrapper">
+                      <el-tag size="medium">{{ scope.row.remote_ip }}</el-tag>
+                    </div>
+                  </el-popover>
+                </template>
+              </el-table-column>
+              <el-table-column label="远程端口">
+                <template slot-scope="scope">
+                  <el-popover trigger="hover" placement="top">
+                    <p>远程代理到本地的端口:{{ scope.row.remote_port }}</p>
+                    <div slot="reference" class="name-wrapper">
+                      <el-tag size="medium">{{ scope.row.remote_port }}</el-tag>
+                    </div>
+                  </el-popover>
+                </template>
+              </el-table-column>
+              <el-table-column label="本地端口">
+                <template slot-scope="scope">
+                  <el-popover trigger="hover" placement="top">
+                    <p>映射到本地的数据出口: {{ scope.row.remote_port }} -> {{ scope.row.local_port }}</p>
+                    <div slot="reference" class="name-wrapper">
+                      <el-tag size="medium">{{ scope.row.local_port }}</el-tag>
+                    </div>
+                  </el-popover>
+                </template>
+              </el-table-column>
+              <el-table-column prop="comment" label="备注"> </el-table-column>
+              <el-table-column fixed="right" label="操作">
+                <template slot-scope="scope">
+                  <el-button size="mini" @click="proxyEdit(scope.row)">克隆</el-button>
+                  <el-button size="mini" type="danger" @click="proxyDelete(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 弹窗区域 -->
+            <el-dialog title="新增代理" :visible.sync="proxy.editShow" v-if="proxy.editShow">
+              <el-form :model="proxy.editData">
+                <el-form-item label="索引id" :label-width="proxy.editData.editFormInputWidth">
+                  <el-input v-model="proxy.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+                </el-form-item>
+                <el-form-item label="转发类型" :label-width="proxy.editData.editFormInputWidth">
+                  <el-select v-model="proxy.editData.type" style="width: 100%" placeholder="请选择">
+                    <el-option label="TCP协议" value="tcp"> </el-option>
+                    <el-option label="UDP协议" value="udp"> </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="远程IP" :label-width="proxy.editData.editFormInputWidth">
+                  <el-input v-model="proxy.editData.remote_ip" placeholder="公网或者内网ip"></el-input>
+                </el-form-item>
+                <el-form-item label="远程端口" :label-width="proxy.editData.editFormInputWidth">
+                  <el-input v-model="proxy.editData.remote_port" placeholder="1-65535"></el-input>
+                </el-form-item>
+                <el-form-item label="本地端口" :label-width="proxy.editData.editFormInputWidth">
+                  <el-input v-model="proxy.editData.local_port" placeholder="1-65535"></el-input>
+                </el-form-item>
+                <el-form-item label="备注" :label-width="proxy.editData.editFormInputWidth">
+                  <el-input v-model="proxy.editData.comment" placeholder="代理备注"></el-input>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="proxyCloseDialog">取 消</el-button>
+                <el-button type="primary" @click="proxyCloseDialog">确 定</el-button>
+              </div>
+            </el-dialog>
+          </div>
+          <!-- 白名单配置 -->
+          <div class="w-full h-100vh bg-red-600" v-else-if="activeNavArrow == 2">
+            <!-- .w-full -->
+            <!-- <el-table :data="whiteList.list" style="width: 100%">
+              <el-table-column prop="id" label="索引"> </el-table-column>
+              <el-table-column prop="ip" label="IP"> </el-table-column>
+              <el-table-column prop="comment" label="备注"> </el-table-column>
+              <el-table-column fixed="right" label="操作">
+                <template slot-scope="scope">
+                  <el-button size="mini" @click="whiteListEdit(scope.row)">复制</el-button>
+                  <el-button size="mini" type="danger" @click="whiteListDelete(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table> -->
+            <!-- 弹窗区域 -->
+            <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
+              <!-- <el-form :model="whiteList.editData">
+                <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+                </el-form-item>
+                <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
+                </el-form-item>
+                <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
+                </el-form-item>
+              </el-form> -->
+            </el-dialog>
+          </div>
+          <div class="w-full h-100vh bg-red-700" v-else>hola</div>
+        </div>
+      </div>
+      <!-- proxy -->
+      <!-- white list -->
+    </div>
+    <script src="./index.js"></script>
+  </body>
+</html>

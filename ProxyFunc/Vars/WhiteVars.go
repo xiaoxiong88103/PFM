@@ -1,8 +1,10 @@
 package Vars
 
 var (
-	WhiteList_files = "/opt/PFM/WhiteList.ini"
-	WhiteList       = make(map[string][]string)
+	WhiteListFileName        = "WhiteList.ini"
+	WhiteListFilePath        = "/opt/PFM/" + WhiteListFileName
+	WhiteListWindowsFilePath = "./conf/" + WhiteListFileName
+	WhiteList                = make(map[string][]string)
 )
 
 var WhiteList_Json struct {

@@ -17,12 +17,14 @@ type PortForwardingRule struct {
 
 // 转发逻辑
 var (
-	ConfigFilePath = "/opt/PFM/port_forwarding_rules.json"
-	Rules          = make(map[string]PortForwardingRule) // 初始化全局规则
-	RulesMu        sync.RWMutex                          // 用于保护 rules 的读写锁
-	Proxy_wg       sync.WaitGroup                        // 用于管理 goroutines
-	TcpListeners   = make(map[string]net.Listener)       // TCP 监听器
-	UdpConns       = make(map[string]net.PacketConn)     // UDP 连接
-	UdpConnsMu     sync.Mutex                            // 保护 udpConns 的互斥锁
-	TcpListenersMu sync.Mutex
+	configFileName        = "port_forwarding_rules.json"
+	ConfigFilePath        = "/opt/PFM/" + configFileName
+	ConfigWindowsFilePath = "./conf/" + configFileName
+	Rules                 = make(map[string]PortForwardingRule) // 初始化全局规则
+	RulesMu               sync.RWMutex                          // 用于保护 rules 的读写锁
+	Proxy_wg              sync.WaitGroup                        // 用于管理 goroutines
+	TcpListeners          = make(map[string]net.Listener)       // TCP 监听器
+	UdpConns              = make(map[string]net.PacketConn)     // UDP 连接
+	UdpConnsMu            sync.Mutex                            // 保护 udpConns 的互斥锁
+	TcpListenersMu        sync.Mutex
 )
