@@ -52,7 +52,7 @@ func IsIPAllowed(port string, clientIP string) bool {
 // ViewAllWhiteListsHandler 查询全部白名单的处理函数
 func ViewAllWhiteListsHandler(c *gin.Context) {
 	// 加载配置文件
-	cfg, err := ini.Load(Vars.WhiteListFileName)
+	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return

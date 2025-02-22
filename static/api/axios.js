@@ -9,31 +9,49 @@ const _conf = (path = "/", methods = "GET", data = {}, headers = {}) => {
   };
 };
 
+req.axios = async (conf) => {
+  try {
+    let { data, status } = await axios(conf);
+    console.log("请求实例：", status, data);
+
+    return data;
+  } catch (e) {
+    console.log(e.response.data.msg);
+    console.log(
+      window.ELEMENT.Notification({
+        title: "错误",
+        message: e.response.data.msg,
+      })
+    );
+
+  }
+};
+
 req.post = (path = "/", data = {}, headers = {}) => {
-  let options = { params: data };
-  return axios(_conf(path, "GET", options, headers));
+  let options = { data };
+  return req.axios(_conf(path, "POST", options, headers));
 };
 
 req.get = (path = "/", data = {}) => {
-  let options = { data };
-  return axios(_conf(path, "POST", options, headers));
+  let options = { params: data };
+  return req.axios(_conf(path, "GET", options));
 };
 
 // apis
-// [GIN-debug] POST   /proxy/setPort            --> PFM/ProxyFunc/Proxy.SetPortForward (4 handlers)
-// [GIN-debug] POST   /proxy/deletePort         --> PFM/ProxyFunc/Proxy.DeletePortForward (4 handlers)
-// [GIN-debug] GET    /proxy/get_port           --> PFM/ProxyFunc/Proxy.ListPortForwards (4 handlers)
+// [GIN-debug] POST   /proxy/setPort            --> PFM/func/Proxy.SetPortForward (4 handlers)
+// [GIN-debug] POST   /proxy/deletePort         --> PFM/func/Proxy.DeletePortForward (4 handlers)
+// [GIN-debug] GET    /proxy/get_port           --> PFM/func/Proxy.ListPortForwards (4 handlers)
 // [GIN-debug] GET    /whiteList/reload         --> PFM/route.Proxy_Route.func1 (4 handlers)
-// [GIN-debug] POST   /whiteList/add            --> PFM/ProxyFunc/WhiteList.AddWhiteListHandler (4 handlers)
-// [GIN-debug] GET    /whiteList/list           --> PFM/ProxyFunc/WhiteList.ViewWhiteListHandler (4 handlers)
-// [GIN-debug] POST   /whiteList/delete         --> PFM/ProxyFunc/WhiteList.DeleteWhiteListHandler (4 handlers)
+// [GIN-debug] POST   /whiteList/add            --> PFM/func/WhiteList.AddWhiteListHandler (4 handlers)
+// [GIN-debug] GET    /whiteList/list           --> PFM/func/WhiteList.ViewWhiteListHandler (4 handlers)
+// [GIN-debug] POST   /whiteList/delete         --> PFM/func/WhiteList.DeleteWhiteListHandler (4 handlers)
 const apiPath = {
   proxySetProt: "/proxy/setPort",
   proxyDeletePort: "/proxy/deletePort",
   proxyProtList: "/proxy/get_port",
   whiteReload: "/whiteList/reload",
-  whiteList: "/whiteList/add",
-  whiteAdd: "/whiteList/list",
+  whiteList: "/whiteList/list",
+  whiteAdd: "/whiteList/add",
   whiteDelete: "/whiteList/delete",
 };
 

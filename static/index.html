@@ -28,8 +28,8 @@
     <script src="./api/axios.js"></script>
     <!-- <script src="./js/vant.min.js"></script> -->
     <link rel="stylesheet" href="./css/elementui.css" />
-    <link rel="stylesheet" href="./index.css" />
-    <link rel="stylesheet" href="./windi.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="stylesheet" href="./css/windi.css" />
   </head>
 
   <body>
@@ -37,10 +37,10 @@
       <!-- layout -->
       <div class="w-full h-full flex">
         <div class="w-240px h-full">
-          <div class="w-full h-60px nav-title flex">路由面板</div>
+          <div class="w-full h-60px nav-title box-border round-sm overflow-hidden flex">路由面板</div>
           <el-menu class="el-menu-vertical-demo" @select="navSelect">
             <el-menu-item-group>
-              <span slot="title">基础功能</span>
+              <span slot="title">基础功能{{activeNavArrow}}</span>
               <el-menu-item index="1">代理配置</el-menu-item>
               <el-menu-item index="3">白名单配置</el-menu-item>
             </el-menu-item-group>
@@ -48,9 +48,7 @@
         </div>
         <div class="w-full h-full bg-red-900 overflow-y-auto">
           <!-- pages -->
-          <!-- 代理配置 -->
           <div class="w-full h-100vh bg-red-400" v-if="activeNavArrow == 1">
-            <!-- .w-full -->
             <el-table :data="proxy.list" style="width: 100%">
               <el-table-column prop="id" label="索引"> </el-table-column>
               <el-table-column prop="type" label="转发类型:TCP/UDP">
@@ -96,7 +94,7 @@
               <el-table-column prop="comment" label="备注"> </el-table-column>
               <el-table-column fixed="right" label="操作">
                 <template slot-scope="scope">
-                  <el-button size="mini" @click="proxyEdit(scope.row)">克隆</el-button>
+                  <el-button size="mini" @click="proxyEditOpen(scope.row)">克隆</el-button>
                   <el-button size="mini" type="danger" @click="proxyDelete(scope.row)">删除</el-button>
                 </template>
               </el-table-column>
@@ -127,14 +125,13 @@
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
-                <el-button @click="proxyCloseDialog">取 消</el-button>
-                <el-button type="primary" @click="proxyCloseDialog">确 定</el-button>
+                <el-button @click="proxyCloseDialog('proxy')">取 消</el-button>
+                <el-button type="primary" @click="proxyEditSave">确 定</el-button>
               </div>
             </el-dialog>
           </div>
           <!-- 白名单配置 -->
           <div class="w-full h-100vh bg-red-600" v-else-if="activeNavArrow == 2">
-            <!-- .w-full -->
             <!-- <el-table :data="whiteList.list" style="width: 100%">
               <el-table-column prop="id" label="索引"> </el-table-column>
               <el-table-column prop="ip" label="IP"> </el-table-column>
@@ -149,16 +146,16 @@
             <!-- 弹窗区域 -->
             <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
               <!-- <el-form :model="whiteList.editData">
-                <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
-                </el-form-item>
-                <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
-                </el-form-item>
-                <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
-                </el-form-item>
-              </el-form> -->
+              <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
+                <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+              </el-form-item>
+              <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
+                <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
+              </el-form-item>
+              <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
+                <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
+              </el-form-item>
+            </el-form> -->
             </el-dialog>
           </div>
           <div class="w-full h-100vh bg-red-700" v-else>hola</div>
