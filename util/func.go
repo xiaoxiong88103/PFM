@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-
 )
 
 // 获取当前平台
@@ -44,7 +43,7 @@ func InitConfigFiles(linuxPath, windowsPath, defValue string) (string, error) {
 		if isFile {
 			return linuxPath, nil
 		} else {
-			err := os.WriteFile(linuxPath, []byte(defValue), 777)
+			err := os.WriteFile(linuxPath, []byte(defValue), 0777)
 			if err != nil {
 				return linuxPath, err
 			}
@@ -58,7 +57,7 @@ func InitConfigFiles(linuxPath, windowsPath, defValue string) (string, error) {
 		if isFile {
 			return windowsPath, nil
 		} else {
-			err := os.WriteFile(windowsPath, []byte(defValue), 777)
+			err := os.WriteFile(windowsPath, []byte(defValue), 0777)
 			if err != nil {
 				return windowsPath, err
 			}

@@ -1,7 +1,7 @@
 package vars
 
 var (
-	WhiteListFileName        = "white_list_rules.ini"
+	WhiteListFileName        = "whitelist_rules.ini"
 	WhiteListFilePath        = "/opt/PFM/" + WhiteListFileName
 	WhiteListWindowsFilePath = "./conf/" + WhiteListFileName
 	WhiteList                = make(map[string][]string)

@@ -23,7 +23,6 @@ req.axios = async (conf) => {
         message: e.response.data.msg,
       })
     );
-
   }
 };
 
@@ -51,6 +50,7 @@ const apiPath = {
   proxyProtList: "/proxy/get_port",
   whiteReload: "/whiteList/reload",
   whiteList: "/whiteList/list",
+  whiteListAll: "/whiteList/list/all",
   whiteAdd: "/whiteList/add",
   whiteDelete: "/whiteList/delete",
 };
@@ -88,6 +88,9 @@ class Request {
   }
   whiteList(data = { port: "" }) {
     return req.get(this.baseUrl + apiPath.whiteList, data, {});
+  }
+  whiteListAll() {
+    return req.get(this.baseUrl + apiPath.whiteListAll, {}, {});
   }
   whiteAdd(
     data = {

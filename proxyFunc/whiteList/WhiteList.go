@@ -60,13 +60,13 @@ func ViewAllWhiteListsHandler(c *gin.Context) {
 
 	// 获取白名单部分
 	section, err := cfg.GetSection("white_list")
+	allWhiteLists := make(map[string][]string)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "未找到白名单部分", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "", "data": allWhiteLists})
 		return
 	}
 
 	// 遍历所有端口的白名单
-	allWhiteLists := make(map[string][]string)
 	for _, key := range section.Keys() {
 		// 获取每个端口的白名单 IP 列表
 		ipList := strings.Split(key.Value(), ",")
@@ -124,23 +124,20 @@ func AddWhiteListHandler(c *gin.Context) {
 			ipSet[ip] = true
 		}
 	}
-
 	// 如果有新的 IP，需要更新配置文件
 	if len(newlyAdded) > 0 {
 		allIPs := make([]string, 0, len(ipSet))
 		for ip := range ipSet {
 			allIPs = append(allIPs, ip)
 		}
-
 		section.Key(port).SetValue(strings.Join(allIPs, ","))
-
 		// 保存到配置文件
+
 		if err := cfg.SaveTo(vars.WhiteListFilePath); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
 			return
 		}
 	}
-
 	// 返回响应
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,

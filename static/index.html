@@ -33,22 +33,47 @@
   </head>
 
   <body>
-    <div id="app">
+    <div id="app" class="bg-[#e9f1fe]">
       <!-- layout -->
       <div class="w-full h-full flex">
-        <div class="w-240px h-full">
-          <div class="w-full h-60px nav-title box-border round-sm overflow-hidden flex">路由面板</div>
-          <el-menu class="el-menu-vertical-demo" @select="navSelect">
-            <el-menu-item-group>
-              <span slot="title">基础功能{{activeNavArrow}}</span>
-              <el-menu-item index="1">代理配置</el-menu-item>
-              <el-menu-item index="3">白名单配置</el-menu-item>
-            </el-menu-item-group>
-          </el-menu>
+        <div class="w-260px h-full flex-col flex p-10px box-border">
+          <div class="w-full h-50px bg-[#fff] nav-title box-border bg-[#fff] rounded-md text-[#444] flex">PFM控制中心</div>
+          <div class="w-full flex-1 bg-[#fff] p-10px box-border mt-10px rounded-md overflow-hidden">
+            <el-menu class="el-menu-vertical-demo" @select="navSelect" :default-active="activeNavArrow">
+              <el-menu-item-group>
+                <span slot="title">基础功能</span>
+                <el-menu-item index="1" class="">代理配置</el-menu-item>
+                <el-menu-item index="2" class="">白名单配置</el-menu-item>
+              </el-menu-item-group>
+            </el-menu>
+          </div>
         </div>
-        <div class="w-full h-full bg-red-900 overflow-y-auto">
+        <div class="w-full h-full flex-col flex border-box p-10px pl-0 overflow-y-auto">
+          <!-- tabs -->
+          <div class="w-full border-box">
+            <div class="w-full flex h-40px pl-20px bg-[#fff] mb-10px items-center rounded-md text-[#555]">
+              <div class="w-full flex items-center" v-if="activeNavArrow == 1">
+                <h1 class="text-[15px] text-900">代理配置</h1>
+              </div>
+              <div class="w-full flex items-center" v-else-if="activeNavArrow == 2">
+                <h1 class="text-[15px] text-900">白名单配置</h1>
+              </div>
+              <div class="w-full flex items-center" v-else>
+                <h1 class="text-[15px] text-900">欢迎</h1>
+              </div>
+            </div>
+            <div class="w-full flex items-center my-10px" v-if="activeNavArrow == 1">
+              <el-button size="small" type="primary" @click="proxyLoad(1)">刷新列表</el-button>
+              <el-button size="small" type="primary" @click="proxyEditOpen">新增代理</el-button>
+            </div>
+            <div class="w-full flex items-center my-10px" v-else-if="activeNavArrow == 2">
+              <el-button size="small" type="primary" @click="whiteLoad(1)">刷新列表</el-button>
+              <el-button size="small" type="primary" @click="whiteEditOpen">新增白名单</el-button>
+              <el-button size="small" type="primary" @click="whiteReload">重载配置</el-button>
+            </div>
+          </div>
           <!-- pages -->
-          <div class="w-full h-100vh bg-red-400" v-if="activeNavArrow == 1">
+          <div class="w-full content" v-if="activeNavArrow == 1">
             <el-table :data="proxy.list" style="width: 100%">
               <el-table-column prop="id" label="索引"> </el-table-column>
               <el-table-column prop="type" label="转发类型:TCP/UDP">
@@ -125,40 +150,44 @@
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
-                <el-button @click="proxyCloseDialog('proxy')">取 消</el-button>
+                <el-button @click="closeDialog('proxy')">取 消</el-button>
                 <el-button type="primary" @click="proxyEditSave">确 定</el-button>
               </div>
             </el-dialog>
           </div>
           <!-- 白名单配置 -->
-          <div class="w-full h-100vh bg-red-600" v-else-if="activeNavArrow == 2">
-            <!-- <el-table :data="whiteList.list" style="width: 100%">
-              <el-table-column prop="id" label="索引"> </el-table-column>
-              <el-table-column prop="ip" label="IP"> </el-table-column>
-              <el-table-column prop="comment" label="备注"> </el-table-column>
-              <el-table-column fixed="right" label="操作">
-                <template slot-scope="scope">
-                  <el-button size="mini" @click="whiteListEdit(scope.row)">复制</el-button>
-                  <el-button size="mini" type="danger" @click="whiteListDelete(scope.row)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table> -->
+          <div class="w-full content" v-else-if="activeNavArrow == 2">
+            <el-tree
+              :data="whiteList.list"
+              :props="{
+            children: 'children',
+            label: 'label'
+          }"
+              @node-click="whiteClick"
+            ></el-tree>
             <!-- 弹窗区域 -->
             <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
-              <!-- <el-form :model="whiteList.editData">
-              <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
-                <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
-              </el-form-item>
-              <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
-                <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
-              </el-form-item>
-              <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
-                <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
-              </el-form-item>
-            </el-form> -->
+              <el-form :model="whiteList.editData">
+                <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+                </el-form-item>
+                <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
+                </el-form-item>
+                <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="closeDialog('whiteList')">取 消</el-button>
+                <el-button type="primary" @click="whiteEditSave">确 定</el-button>
+              </div>
             </el-dialog>
           </div>
-          <div class="w-full h-100vh bg-red-700" v-else>hola</div>
+          <div class="w-full content" v-else>
+            <h2 class="mt-10px text-20px font-800 text-[#333]">欢迎使用PFM控制面板（Port Forwarding Manager）</h2>
+            <p class="mt-15px text-16px text-[#555]">一个功能强大的端口转发控制面板，专为 UDP 和 TCP 协议的端口转发设计，提供完整的流量记录和分析功能。</p>
+          </div>
         </div>
       </div>
       <!-- proxy -->

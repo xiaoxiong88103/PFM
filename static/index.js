@@ -3,7 +3,7 @@ var app = new Vue({
   el: "#app",
   data: {
     axios: new Request("http://127.0.0.1:8281"),
-    activeNavArrow: 1,
+    activeNavArrow: 0,
     // 代理配置
     proxy: {
       list: [],
@@ -22,14 +22,12 @@ var app = new Vue({
     whiteList: {
       list: [
         {
-          id: "1",
-          ip: "127.0.0.1",
-          comment: "白名单1",
-        },
-        {
-          id: "2",
-          ip: "192.168.0.1",
-          comment: "白名单2",
+          label: "一级 1",
+          children: [
+            {
+              label: "二级 1-1",
+            },
+          ],
         },
       ],
       editShow: false,
@@ -42,6 +40,7 @@ var app = new Vue({
     },
   },
   methods: {
+    // 切换导航
     async navSelect(key, keyPath) {
       this.activeNavArrow = key;
       setTimeout(() => {
@@ -52,70 +51,122 @@ var app = new Vue({
     handleClick(row) {
       console.log(row);
     },
+    // 删除代理
     proxyDelete(row = {}) {
       let { id } = row;
       this.axios.proxyDeletePort({ id });
     },
+    async proxyLoad(isRestful = 2) {
+      if (isRestful === 1) {
+        window.ELEMENT.Notification({
+          title: "提示",
+          message: "刷新中...",
+        });
+      }
+      let data = await this.axios.proxyProtList();
+      this.proxy.list = [];
+      for (const i in data.data) {
+        if (Object.prototype.hasOwnProperty.call(data.data, i)) {
+          const el = data.data[i];
+          this.proxy.list.push(el);
+        }
+      }
+      this.proxy.editData = {
+        id: "",
+        type: "",
+        remote_ip: "",
+        remote_port: "",
+        local_port: "",
+        comment: "",
+      };
+    },
+    // 编辑代理
     proxyEditOpen(row = {}) {
       this.proxy.editShow = true;
-      row.id++;
-      row.id = String(row.id);
-      row.local_port++;
-      row.local_port = String(row.local_port);
-      this.proxy.editData = row;
+      if (row.id !== undefined) {
+        row.id++;
+        row.id = String(row.id);
+        row.local_port++;
+        row.local_port = String(row.local_port);
+        this.proxy.editData = row;
+      }
     },
+
+    // 编辑代理保存
     async proxyEditSave() {
       this.proxy.editShow = false;
       await this.axios.proxySetProt(this.proxy.editData);
       this.init(this.activeNavArrow);
     },
-    proxyCloseDialog(key = "") {
+    // 退出编辑代理
+    closeDialog(key = "") {
       setTimeout(() => {
         this[key].editShow = false;
       }, 100);
     },
+    // 白名单点击
+    whiteClick(data = {}) {
+      console.log("点击了白名单item", data);
+    },
+    // 重载白名单
+    async whiteReload() {
+      let data = await this.axios.whiteReload();
+      window.ELEMENT.Notification({
+        title: "提示",
+        message: data.msg,
+      });
+    },
+    // 编辑白名单
+    whiteEditOpen(row = {}) {
+      this.whiteList.editShow = true;
+      if (row.id !== undefined) {
+        row.id++;
+        row.id = String(row.id);
+        this.whiteList.editData = row;
+      }
+    },
+    async whiteLoad(isRestful = 2) {
+      console.log(isRestful);
+      if (isRestful === 1) {
+        window.ELEMENT.Notification({
+          title: "提示",
+          message: "刷新中...",
+        });
+      }
+      let data = await this.axios.whiteListAll();
+      this.whiteList.list = [];
+      for (const key in data.data) {
+        if (Object.prototype.hasOwnProperty.call(data.data, key)) {
+          const it = data.data[key];
+          let item = {};
+          item.label = key;
+          item.child = false;
+          item.children = it.map((t) => {
+            return { label: t, child: true };
+          });
+          this.whiteList.list.push(item);
+        }
+      }
+      this.whiteList.editData = {
+        id: "",
+        ip: "",
+        comment: "",
+      };
+    },
+    async whiteEditSave() {
+      this.whiteList.editShow = false;
+      await this.axios.whiteAdd(this.whiteList.editData);
+      this.init(this.activeNavArrow);
+      console.log(this.whiteList.editData);
+    },
     // 初始化
     async init(arrow = 1) {
+      console.log(arrow);
       if (arrow == 1) {
-        let data = await this.axios.proxyProtList();
-        this.proxy.list = [];
-        for (const i in data.data) {
-          if (Object.prototype.hasOwnProperty.call(data.data, i)) {
-            const el = data.data[i];
-            this.proxy.list.push(el);
-          }
-        }
-        this.proxy.editData = {
-          id: "",
-          type: "",
-          remote_ip: "",
-          remote_port: "",
-          local_port: "",
-          comment: "",
-        };
+        this.proxyLoad();
       }
-      if (arrow == 3) {
-        let data = await this.axios.proxyProtList();
-        let list = [];
-        for (const i in data.data) {
-          if (Object.prototype.hasOwnProperty.call(data.data, i)) {
-            const el = data.data[i];
-            list.push(el);
-          }
-        }
-        let protList = await Promise.all(
-          list.map(async (t) => {
-            return {
-              ...t,
-              data: await this.axios.whiteList({ port: t.local_port }),
-            };
-          })
-        );
-        console.log(
-          protList.map((t) => {
-            return { ...t, data: t?.data?.data || null };
-          })
-        );
+      if (arrow == 2) {
+        this.whiteLoad();
       }
     },
   },
