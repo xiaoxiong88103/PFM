@@ -2,7 +2,7 @@ const BASE_URL = "";
 var app = new Vue({
   el: "#app",
   data: {
-    axios: new Request("http://localhost:8281"),
+    axios: new Request("http://127.0.0.1:8281"),
     activeNavArrow: 1,
     // 代理配置
     proxy: {

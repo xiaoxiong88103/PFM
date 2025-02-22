@@ -46,7 +46,7 @@ func DeletePortForward(c *gin.Context) {
 
 	// 保存修改后的规则到文件
 	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 		return
 	}
 

@@ -54,7 +54,7 @@ func ViewAllWhiteListsHandler(c *gin.Context) {
 	// 加载配置文件
 	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
 	}
 
@@ -79,19 +79,19 @@ func ViewAllWhiteListsHandler(c *gin.Context) {
 
 // AddWhiteListHandler 处理添加白名单的 POST 请求
 func AddWhiteListHandler(c *gin.Context) {
-	// 绑定请求体到 WhiteList_Json
-	if err := c.ShouldBindJSON(&Vars.WhiteList_Json); err != nil {
+	// 绑定请求体到 WhiteListJson
+	if err := c.ShouldBindJSON(&Vars.WhiteListJson); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求参数错误", "data": err.Error()})
 		return
 	}
 
-	port := Vars.WhiteList_Json.Port
-	newIPs := strings.Split(Vars.WhiteList_Json.IP, ",")
+	port := Vars.WhiteListJson.Port
+	newIPs := strings.Split(Vars.WhiteListJson.IP, ",")
 
 	// 加载配置文件
 	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
 	}
 
@@ -136,7 +136,7 @@ func AddWhiteListHandler(c *gin.Context) {
 
 		// 保存到配置文件
 		if err := cfg.SaveTo(Vars.WhiteListFilePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
 			return
 		}
 	}
@@ -163,7 +163,7 @@ func ViewWhiteListHandler(c *gin.Context) {
 	// 加载配置文件
 	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
 	}
 
@@ -183,19 +183,19 @@ func ViewWhiteListHandler(c *gin.Context) {
 
 // DeleteWhiteListHandler 删除白名单的处理函数
 func DeleteWhiteListHandler(c *gin.Context) {
-	// 绑定请求体到 WhiteList_Json
-	if err := c.ShouldBindJSON(&Vars.WhiteList_Json); err != nil {
+	// 绑定请求体到 WhiteListJson
+	if err := c.ShouldBindJSON(&Vars.WhiteListJson); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求参数错误", "data": err.Error()})
 		return
 	}
 
-	port := Vars.WhiteList_Json.Port
-	deleteIPs := strings.Split(Vars.WhiteList_Json.IP, ",")
+	port := Vars.WhiteListJson.Port
+	deleteIPs := strings.Split(Vars.WhiteListJson.IP, ",")
 
 	// 加载配置文件
 	cfg, err := ini.Load(Vars.WhiteListFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "加载配置文件失败", "data": err.Error()})
 		return
 	}
 
@@ -243,7 +243,7 @@ func DeleteWhiteListHandler(c *gin.Context) {
 	}
 
 	if err := cfg.SaveTo(Vars.WhiteListFilePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存配置文件失败", "data": err.Error()})
 		return
 	}
 

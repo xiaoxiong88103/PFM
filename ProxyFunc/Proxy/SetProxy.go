@@ -11,24 +11,20 @@ import (
 
 func SetPortForward(c *gin.Context) {
 	var req Vars.PortForwardingRule
-
 	// 解析并绑定请求体
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求格式错误", "data": nil})
 		return
 	}
-
 	// 检查并初始化 rules
 	if Vars.Rules == nil {
 		Vars.Rules = make(map[string]Vars.PortForwardingRule)
 	}
-
 	// 校验请求体字段
 	if req.ID == "" || req.Type == "" || req.RemoteIP == "" || req.RemotePort == "" || req.LocalPort == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "ID、类型、IP 或端口字段缺失或为空", "data": nil})
 		return
 	}
-
 	// 1. **先检查本地端口冲突**:
 	//    如果已有相同类型的转发规则使用了相同的本地端口，则返回冲突
 	Vars.RulesMu.RLock() // 读锁
@@ -58,7 +54,7 @@ func SetPortForward(c *gin.Context) {
 	// 保存规则到内存和文件
 	Vars.Rules[req.ID] = req
 	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 		return
 	}
 

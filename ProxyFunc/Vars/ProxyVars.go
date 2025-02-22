@@ -17,7 +17,7 @@ type PortForwardingRule struct {
 
 // 转发逻辑
 var (
-	configFileName        = "port_forwarding_rules.json"
+	configFileName        = "port_rules.json"
 	ConfigFilePath        = "/opt/PFM/" + configFileName
 	ConfigWindowsFilePath = "./conf/" + configFileName
 	Rules                 = make(map[string]PortForwardingRule) // 初始化全局规则
