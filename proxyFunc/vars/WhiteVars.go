@@ -1,4 +1,4 @@
-package Vars
+package vars
 
 var (
 	WhiteListFileName        = "white_list_rules.ini"

@@ -1,44 +1,44 @@
-package Proxy
+package proxy
 
 import (
-	"PFM/ProxyFunc/Vars"
+	"PFM/proxyFunc/vars"
 	"encoding/json"
 	"log"
 	"os"
 	"time"
 )
 
-func LoadPortForwardingRules() (map[string]Vars.PortForwardingRule, error) {
-	Vars.Rules = make(map[string]Vars.PortForwardingRule)
-	file, err := os.Open(Vars.ConfigFilePath)
+func LoadPortForwardingRules() (map[string]vars.PortForwardingRule, error) {
+	vars.Rules = make(map[string]vars.PortForwardingRule)
+	file, err := os.Open(vars.ConfigFilePath)
 	if os.IsNotExist(err) {
 		// 如果文件不存在，则创建一个空的配置文件
-		file, err = os.Create(Vars.ConfigFilePath)
+		file, err = os.Create(vars.ConfigFilePath)
 		if err != nil {
 			return nil, err
 		}
 		defer file.Close()
 		encoder := json.NewEncoder(file)
 		encoder.SetIndent("", "  ")
-		err = encoder.Encode(Vars.Rules)
+		err = encoder.Encode(vars.Rules)
 		if err != nil {
 			return nil, err
 		}
-		return Vars.Rules, nil
+		return vars.Rules, nil
 	}
 	if os.IsNotExist(err) {
-		return Vars.Rules, nil // 文件不存在则返回空规则列表
+		return vars.Rules, nil // 文件不存在则返回空规则列表
 	} else if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&Vars.Rules)
+	err = decoder.Decode(&vars.Rules)
 	if err != nil {
 		return nil, err
 	}
-	return Vars.Rules, nil
+	return vars.Rules, nil
 }
 
 func InitReloadProxy() {
@@ -50,7 +50,7 @@ func InitReloadProxy() {
 	}
 
 	// 恢复端口转发规则
-	for _, rule := range Vars.Rules {
+	for _, rule := range vars.Rules {
 		StartForwarding(rule)
 		time.Sleep(1 * time.Millisecond) // 延迟1毫秒
 	}

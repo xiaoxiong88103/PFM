@@ -32,6 +32,6 @@ func main() {
 	// 托管文件
 	r.Use(static.Serve("/", static.LocalFile(util.WebPanelPublicPath, true)))
 	//加载转发接口
-	route.Proxy_Route(r)
+	route.ProxyRoute(r)
 	r.Run(":8281")
 }

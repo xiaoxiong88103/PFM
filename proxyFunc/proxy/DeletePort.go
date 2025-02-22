@@ -1,8 +1,8 @@
-package Proxy
+package proxy
 
 import (
-	"PFM/ProxyFunc/SaveJson"
-	"PFM/ProxyFunc/Vars"
+	"PFM/proxyFunc/saveJson"
+	"PFM/proxyFunc/vars"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -21,23 +21,23 @@ func DeletePortForward(c *gin.Context) {
 	}
 
 	id := req.ID // 直接使用传入的 ID
-	if rule, exists := Vars.Rules[id]; exists {
+	if rule, exists := vars.Rules[id]; exists {
 		// 停止转发
 		if rule.Type == "tcp" {
-			if listener, ok := Vars.TcpListeners[id]; ok {
+			if listener, ok := vars.TcpListeners[id]; ok {
 				listener.Close()
 			}
 		} else if rule.Type == "udp" {
-			Vars.UdpConnsMu.Lock()
-			if conn, ok := Vars.UdpConns[id]; ok {
+			vars.UdpConnsMu.Lock()
+			if conn, ok := vars.UdpConns[id]; ok {
 				conn.Close()
 			}
-			Vars.UdpConnsMu.Unlock()
+			vars.UdpConnsMu.Unlock()
 		}
 
 		time.Sleep(1 * time.Millisecond) // 延迟1毫秒
 		// 从规则列表中删除
-		delete(Vars.Rules, id)
+		delete(vars.Rules, id)
 	} else {
 		// 如果 ID 不存在，返回错误信息
 		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "规则不存在", "data": nil})
@@ -45,7 +45,7 @@ func DeletePortForward(c *gin.Context) {
 	}
 
 	// 保存修改后的规则到文件
-	if err := SaveJson.SavePortForwardingRules(Vars.Rules); err != nil {
+	if err := saveJson.SavePortForwardingRules(vars.Rules); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "保存端口转发规则失败", "data": err.Error()})
 		return
 	}

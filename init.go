@@ -1,17 +1,17 @@
 package main
 
 import (
-	"PFM/ProxyFunc/Proxy"
-	"PFM/ProxyFunc/Vars"
-	"PFM/ProxyFunc/WhiteList"
+	"PFM/proxyFunc/proxy"
+	"PFM/proxyFunc/vars"
+	"PFM/proxyFunc/whiteList"
 )
 
 func init() {
 	//检查config文件是否缺少
-	_ = Vars.CheckAndCreateFileJson(Vars.ConfigFilePath)
-	_ = Vars.CheckAndCreateINI(Vars.WhiteListFilePath)
+	_ = vars.CheckAndCreateFileJson(vars.ConfigFilePath)
+	_ = vars.CheckAndCreateINI(vars.WhiteListFilePath)
 	//开机转发恢复
-	Proxy.InitReloadProxy()
+	proxy.InitReloadProxy()
 	//白名单检查列
-	_ = WhiteList.LoadWhiteList()
+	_ = whiteList.LoadWhiteList()
 }
