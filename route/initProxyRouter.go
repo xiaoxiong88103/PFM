@@ -29,5 +29,16 @@ func ProxyRoute(r *gin.Engine) {
 	whiteListRouter.GET("/list/all", whiteList.ViewAllWhiteListsHandler)
 	// 删除白名单路由
 	whiteListRouter.POST("/delete", whiteList.DeleteWhiteListHandler)
-
+	//白名单的限制端口次数查询
+	whiteListNumber := whiteListRouter.Group("/number")
+	whiteListNumber.GET("/status", func(c *gin.Context) {
+		port := c.Query("port")
+		portNumber := whiteList.QueryConnectionCount(port)
+		c.JSON(http.StatusOK, gin.H{"port_number": portNumber})
+	})
+	whiteListNumber.GET("/clear", func(c *gin.Context) {
+		port := c.Query("port")
+		whiteList.ResetConnectionCount(port)
+		c.String(200, "恭喜清理成功")
+	})
 }

@@ -21,7 +21,7 @@
 go.work
 go.work.sum
 go.sum
-.idea
+.idea/
 # env file
 .env
 conf/
