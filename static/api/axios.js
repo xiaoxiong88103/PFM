@@ -15,14 +15,11 @@ req.axios = async (conf) => {
     console.log("请求实例：", status, data);
     return data;
   } catch (e) {
-    console.log(e)
-    console.log(e.response.data.msg);
-    console.log(
-      window.ELEMENT.Notification({
-        title: "错误",
-        message: e.response.data.msg,
-      })
-    );
+    console.log(e);
+    window.ELEMENT.Notification({
+      title: "错误",
+      message: e.response.data.msg,
+    })
   }
 };
 
@@ -36,14 +33,16 @@ req.get = (path = "/", data = {}) => {
   return req.axios(_conf(path, "GET", options));
 };
 
-// apis
-// [GIN-debug] POST   /proxy/setPort            --> PFM/func/Proxy.SetPortForward (4 handlers)
-// [GIN-debug] POST   /proxy/deletePort         --> PFM/func/Proxy.DeletePortForward (4 handlers)
-// [GIN-debug] GET    /proxy/getPort           --> PFM/func/Proxy.ListPortForwards (4 handlers)
-// [GIN-debug] GET    /whiteList/reload         --> PFM/route.Proxy_Route.func1 (4 handlers)
-// [GIN-debug] POST   /whiteList/add            --> PFM/func/WhiteList.AddWhiteListHandler (4 handlers)
-// [GIN-debug] GET    /whiteList/list           --> PFM/func/WhiteList.ViewWhiteListHandler (4 handlers)
-// [GIN-debug] POST   /whiteList/delete         --> PFM/func/WhiteList.DeleteWhiteListHandler (4 handlers)
+// POST   /proxy/setPort
+// POST   /proxy/deletePort
+// GET    /proxy/getPort
+// GET    /whiteList/reload
+// POST   /whiteList/add
+// GET    /whiteList/list
+// GET    /whiteList/list/all
+// POST   /whiteList/delete
+// GET    /whiteList/number/status
+// GET    /whiteList/number/clear
 const apiPath = {
   proxySetProt: "/proxy/setPort",
   proxyDeletePort: "/proxy/deletePort",

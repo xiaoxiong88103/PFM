@@ -34,11 +34,11 @@ func ProxyRoute(r *gin.Engine) {
 	whiteListNumber.GET("/status", func(c *gin.Context) {
 		port := c.Query("port")
 		portNumber := whiteList.QueryConnectionCount(port)
-		c.JSON(http.StatusOK, gin.H{"port_number": portNumber})
+		c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "缺少端口号参数", "data": portNumber})
 	})
 	whiteListNumber.GET("/clear", func(c *gin.Context) {
 		port := c.Query("port")
 		whiteList.ResetConnectionCount(port)
-		c.String(200, "恭喜清理成功")
+		c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "恭喜清理成功", "data": nil})
 	})
 }

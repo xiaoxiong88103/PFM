@@ -23,10 +23,12 @@
     </script>
     <script src="./js/vue.js"></script>
     <script src="./js/axios.min.js"></script>
-    <script src="./js/elementui.js"></script>
     <script src="./api/axios.js"></script>
     <!-- <script src="./js/vant.min.js"></script> -->
-    <link rel="stylesheet" href="./css/elementui.css" />
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- <script src="./js/elementui.js"></script>
+    <link rel="stylesheet" href="./css/elementui.css" /> -->
     <link rel="stylesheet" href="./css/index.css" />
     <link rel="stylesheet" href="./css/windi.css" />
   </head>
@@ -158,23 +160,31 @@
           <div class="w-full content" v-else-if="activeNavArrow == 2">
             <el-tree
               :data="whiteList.list"
+              default-expand-all
               :props="{
             children: 'children',
             label: 'label'
           }"
-              @node-click="whiteClick"
-            ></el-tree>
+            >
+              <span class="custom-tree-node w-full justify-between flex" slot-scope="{ node, data }">
+                <span>{{node.label}}</span>
+                <span v-if="data.child">
+                  <el-button type="text" size="mini" @click="() => whiteEditOpen(data)"> 克隆 </el-button>
+                  <el-button type="text" size="mini" @click="() => whiteRemove(data)"> 删除 </el-button>
+                </span>
+                <span v-else>
+                  <el-button type="text" size="mini" @click="() => whiteEditOpen(data)"> 新增 </el-button>
+                </span>
+              </span>
+            </el-tree>
             <!-- 弹窗区域 -->
             <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
               <el-form :model="whiteList.editData">
-                <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+                <el-form-item label="端口" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.port" placeholder="端口号"></el-input>
                 </el-form-item>
                 <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
                   <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
-                </el-form-item>
-                <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
