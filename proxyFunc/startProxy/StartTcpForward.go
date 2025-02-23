@@ -1,8 +1,8 @@
-package StartProxy
+package startProxy
 
 import (
-	"PFM/ProxyFunc/Vars"
-	"PFM/ProxyFunc/WhiteList"
+	"PFM/proxyFunc/vars"
+	"PFM/proxyFunc/whiteList"
 	"io"
 	"log"
 	"net"
@@ -10,7 +10,7 @@ import (
 )
 
 // 开启tcp规则转发
-func StartTCPForward(rule Vars.PortForwardingRule) {
+func StartTCPForward(rule vars.PortForwardingRule) {
 
 	// 尝试监听本地端口
 	listener, err := net.Listen("tcp", ":"+rule.LocalPort)
@@ -20,16 +20,16 @@ func StartTCPForward(rule Vars.PortForwardingRule) {
 	}
 
 	// 锁住 tcpListeners map，防止并发写入引发错误
-	Vars.TcpListenersMu.Lock()
-	Vars.TcpListeners[rule.ID] = listener
-	Vars.TcpListenersMu.Unlock()
+	vars.TcpListenersMu.Lock()
+	vars.TcpListeners[rule.ID] = listener
+	vars.TcpListenersMu.Unlock()
 
 	// 确保 listener 关闭时也删除 map 中的记录
 	defer func() {
 		listener.Close()
-		Vars.TcpListenersMu.Lock()
-		delete(Vars.TcpListeners, rule.ID)
-		Vars.TcpListenersMu.Unlock()
+		vars.TcpListenersMu.Lock()
+		delete(vars.TcpListeners, rule.ID)
+		vars.TcpListenersMu.Unlock()
 	}()
 
 	log.Printf("TCP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
@@ -47,29 +47,18 @@ func StartTCPForward(rule Vars.PortForwardingRule) {
 		// 获取客户端 IP
 		clientAddr := clientConn.RemoteAddr().(*net.TCPAddr).IP.String()
 		// 校验 IP 是否在白名单中
-		if !WhiteList.IsIPAllowed(rule.LocalPort, clientAddr) {
+		if !whiteList.IsIPAllowed(rule.LocalPort, clientAddr) {
 			log.Printf("拒绝连接，客户端IP %s 不在端口 %s 的白名单中", clientAddr, rule.LocalPort)
 			clientConn.Close()
 			continue
 		}
-
-		//查询端口是否超过限制
-		if WhiteList.IsPortWithinLimit(Vars.WhiteList_files, rule.LocalPort) {
-
-		} else {
-			log.Printf("拒绝连接端口 %s 的限制过了 无法访问了", rule.LocalPort)
-			clientConn.Close()
-			continue
-		}
-		//增加端口
-		WhiteList.UpdateConnectionCount(rule.LocalPort)
 
 		go handleTCPConnection(clientConn, rule)
 	}
 }
 
 // 处理tcp转发逻辑
-func handleTCPConnection(clientConn net.Conn, rule Vars.PortForwardingRule) {
+func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 	defer clientConn.Close()
 
 	var remoteConn net.Conn

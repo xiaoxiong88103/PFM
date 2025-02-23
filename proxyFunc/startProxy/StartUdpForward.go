@@ -1,8 +1,8 @@
-package StartProxy
+package startProxy
 
 import (
-	"PFM/ProxyFunc/Vars"
-	"PFM/ProxyFunc/WhiteList"
+	"PFM/proxyFunc/vars"
+	"PFM/proxyFunc/whiteList"
 	"log"
 	"net"
 	"sync"
@@ -10,7 +10,7 @@ import (
 )
 
 // 处理udp转发逻辑
-func StartUDPForward(rule Vars.PortForwardingRule) {
+func StartUDPForward(rule vars.PortForwardingRule) {
 	defer handlePanic("StartUDPForward", rule.ID)
 
 	// 创建本地 UDP 监听器
@@ -19,15 +19,15 @@ func StartUDPForward(rule Vars.PortForwardingRule) {
 		log.Printf("无法监听本地 UDP 地址 %s: %v", rule.LocalPort, err)
 		return
 	}
-	Vars.UdpConnsMu.Lock()
-	Vars.UdpConns[rule.ID] = localConn
-	Vars.UdpConnsMu.Unlock()
+	vars.UdpConnsMu.Lock()
+	vars.UdpConns[rule.ID] = localConn
+	vars.UdpConnsMu.Unlock()
 
 	defer func() {
 		localConn.Close()
-		Vars.UdpConnsMu.Lock()
-		delete(Vars.UdpConns, rule.ID)
-		Vars.UdpConnsMu.Unlock()
+		vars.UdpConnsMu.Lock()
+		delete(vars.UdpConns, rule.ID)
+		vars.UdpConnsMu.Unlock()
 	}()
 
 	log.Printf("UDP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
@@ -90,7 +90,7 @@ func StartUDPForward(rule Vars.PortForwardingRule) {
 		//校验白名单IP
 		clientIP, _, _ := net.SplitHostPort(clientKey)
 		// 校验 IP 是否在白名单中
-		if !WhiteList.IsIPAllowed(rule.LocalPort, clientIP) {
+		if !whiteList.IsIPAllowed(rule.LocalPort, clientIP) {
 			log.Printf("拒绝连接，客户端 IP %s 不在端口 %s 的白名单中", clientIP, rule.LocalPort)
 			bufferPool.Put(buffer)
 			continue

@@ -1,4 +1,4 @@
-package StartProxy
+package startProxy
 
 import (
 	"net"

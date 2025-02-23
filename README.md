@@ -1,6 +1,6 @@
-# Port Forwarding Manager (PFM)
+# Port Forwarding Manager SSR (PFM-SSR)
 
-**Port Forwarding Manager (PFM)** 是一个功能强大的端口转发控制面板，专为 UDP 和 TCP 协议的端口转发设计，提供完整的流量记录和分析功能。它旨在帮助网络管理员和用户便捷地管理和配置端口转发规则，确保外部设备能够安全、高效地访问内部服务。
+**Port Forwarding Manager SSR (PFM)** 是一个功能强大的端口转发控制面板，专为 UDP 和 TCP 协议的端口转发设计，提供完整的流量记录和分析功能。它旨在帮助网络管理员和用户便捷地管理和配置端口转发规则，确保外部设备能够安全、高效地访问内部服务。
 
 ## 主要功能
 
@@ -27,5 +27,5 @@
 
 ## 总结
 
-无论是主机游戏服务器、Web 服务，还是复杂的企业网络配置，**Port Forwarding Manager (PFM)** 都是一个理想的工具，提供高效的端口转发管理和详细的流量分析功能，帮助你更好地掌控网络环境。
+无论是主机游戏服务器、Web 服务，还是复杂的企业网络配置，**Port Forwarding Manager SSR (PFM)** 都是一个理想的工具，提供高效的端口转发管理和详细的流量分析功能，帮助你更好地掌控网络环境。
 

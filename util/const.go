@@ -5,4 +5,4 @@ const (
 	LinuxPlEum uint = 2 // linux
 )
 
-const WebPanelPublicPath = "/opt/PFM/static"
+const WebPanelPublicPath = "./static"

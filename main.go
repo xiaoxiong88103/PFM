@@ -3,6 +3,7 @@ package main
 import (
 	"PFM/route"
 	"PFM/util"
+
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
@@ -27,12 +28,10 @@ func middleware() gin.HandlerFunc {
 
 func main() {
 	r := gin.Default()
-	//加载转发接口
-	route.Proxy_Route(r)
-
 	r.Use(middleware())
 	// 托管文件
 	r.Use(static.Serve("/", static.LocalFile(util.WebPanelPublicPath, true)))
-
-	r.Run(":8281") // 监听并在 0.0.0.0:8080 上启动服务
+	//加载转发接口
+	route.ProxyRoute(r)
+	r.Run(":8281")
 }

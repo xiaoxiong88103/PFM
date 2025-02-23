@@ -13,9 +13,9 @@ req.axios = async (conf) => {
   try {
     let { data, status } = await axios(conf);
     console.log("请求实例：", status, data);
-
     return data;
   } catch (e) {
+    console.log(e)
     console.log(e.response.data.msg);
     console.log(
       window.ELEMENT.Notification({
@@ -39,7 +39,7 @@ req.get = (path = "/", data = {}) => {
 // apis
 // [GIN-debug] POST   /proxy/setPort            --> PFM/func/Proxy.SetPortForward (4 handlers)
 // [GIN-debug] POST   /proxy/deletePort         --> PFM/func/Proxy.DeletePortForward (4 handlers)
-// [GIN-debug] GET    /proxy/get_port           --> PFM/func/Proxy.ListPortForwards (4 handlers)
+// [GIN-debug] GET    /proxy/getPort           --> PFM/func/Proxy.ListPortForwards (4 handlers)
 // [GIN-debug] GET    /whiteList/reload         --> PFM/route.Proxy_Route.func1 (4 handlers)
 // [GIN-debug] POST   /whiteList/add            --> PFM/func/WhiteList.AddWhiteListHandler (4 handlers)
 // [GIN-debug] GET    /whiteList/list           --> PFM/func/WhiteList.ViewWhiteListHandler (4 handlers)
@@ -47,7 +47,7 @@ req.get = (path = "/", data = {}) => {
 const apiPath = {
   proxySetProt: "/proxy/setPort",
   proxyDeletePort: "/proxy/deletePort",
-  proxyProtList: "/proxy/get_port",
+  proxyProtList: "/proxy/getPort",
   whiteReload: "/whiteList/reload",
   whiteList: "/whiteList/list",
   whiteListAll: "/whiteList/list/all",
