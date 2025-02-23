@@ -15,7 +15,7 @@ func ProxyRoute(r *gin.Engine) {
 	// 删除端口转发的接口
 	proxyRouter.POST("/deletePort", proxy.DeletePortForward)
 	// 查询端口转发的接口
-	proxyRouter.GET("/get_port", proxy.ListPortForwards)
+	proxyRouter.GET("/getPort", proxy.ListPortForwards)
 	whiteListRouter := r.Group("whiteList")
 	whiteListRouter.GET("/reload", func(c *gin.Context) {
 		_ = whiteList.LoadWhiteList()
