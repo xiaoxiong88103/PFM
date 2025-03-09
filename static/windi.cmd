@@ -1,0 +1,1 @@
+windicss './**/*.html' -to ./css/windi.css --minify --dev

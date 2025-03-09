@@ -1,6 +1,7 @@
 package main
 
 import (
+	"PFM/proxyFunc"
 	"PFM/route"
 	"PFM/util"
 
@@ -31,6 +32,8 @@ func main() {
 	r.Use(middleware())
 	// 托管文件
 	r.Use(static.Serve("/", static.LocalFile(util.WebPanelPublicPath, true)))
+	// 初始化文件防止空指针
+	proxyFunc.InitPublic()
 	//加载转发接口
 	route.ProxyRoute(r)
 	r.Run(":8281")

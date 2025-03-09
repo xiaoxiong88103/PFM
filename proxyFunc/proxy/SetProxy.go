@@ -44,7 +44,17 @@ func SetPortForward(c *gin.Context) {
 	// 检查规则是否已存在
 	if _, exists := vars.Rules[req.ID]; exists {
 		fmt.Println("已存在的规则:", vars.Rules[req.ID])
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "规则已存在", "data": nil})
+		//c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "规则已存在", "data": nil})
+		// 兼容修改端口功能
+		vars.Rules[req.ID] = req
+		id := req.ID // 获取传入的 ID
+		if rule, exists := vars.Rules[id]; exists {
+			// 重新启动转发
+			StartForwarding(rule)
+			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "端口转发已重新启动", "data": rule})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "规则不存在", "data": nil})
+		}
 		return
 	}
 

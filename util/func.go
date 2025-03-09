@@ -93,3 +93,10 @@ func IsDir(path string) bool {
 func IsFile(path string) bool {
 	return !IsDir(path)
 }
+
+func BoolToEum(status bool) uint {
+	return map[bool]uint{
+		true:  TrueEum,
+		false: FalseEum,
+	}[status]
+}

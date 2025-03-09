@@ -24,7 +24,6 @@ func ProxyRoute(r *gin.Engine) {
 	proxyRouter.POST("/stopPort", proxy.StopPortForward)
 	// 查询停止转发的接口目前暂停转发的接口
 	proxyRouter.GET("/getStopPort", proxy.GetStoppedPortForwards)
-
 	whiteListRouter := r.Group("whiteList")
 	whiteListRouter.GET("/reload", func(c *gin.Context) {
 		_ = whiteList.LoadWhiteList()

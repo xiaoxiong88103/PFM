@@ -29,13 +29,10 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 		delete(vars.UdpConns, rule.ID)
 		vars.UdpConnsMu.Unlock()
 	}()
-
 	log.Printf("UDP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
-
 	clientToRemote := sync.Map{}
 	lastActivity := sync.Map{}
 	stopChannel := make(chan struct{}) // 用于优雅关闭
-
 	// 定时清理超时连接
 	go func() {
 		defer handlePanic("UDP Cleaner", rule.ID)

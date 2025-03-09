@@ -59,13 +59,11 @@ func StopPortForward(c *gin.Context) {
 	var req struct {
 		ID string `json:"id"`
 	}
-
 	// 解析并绑定请求体
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求格式错误", "data": nil})
 		return
 	}
-
 	id := req.ID // 获取传入的 ID
 	if rule, exists := vars.Rules[id]; exists {
 		// 停止转发但不删除规则
@@ -86,7 +84,6 @@ func StopPortForward(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "规则不存在", "data": nil})
 		return
 	}
-
 	// 返回成功响应
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "端口转发已停止", "data": id})
 }

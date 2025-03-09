@@ -54,12 +54,15 @@ var app = new Vue({
       }
       let data = await this.axios.proxyProtList();
       this.proxy.list = [];
+      let list = [];
       for (const i in data.data) {
         if (Object.prototype.hasOwnProperty.call(data.data, i)) {
           const el = data.data[i];
-          this.proxy.list.push(el);
+          list.push(el);
         }
       }
+      console.log(list.sort((a, b) => Number(b.id) - Number(a.id)));
+      this.proxy.list = list;
       this.proxy.editData = {
         id: "",
         type: "",
@@ -70,15 +73,29 @@ var app = new Vue({
       };
     },
     // 编辑代理
-    proxyEditOpen(row = {}) {
-      this.proxy.editShow = true;
-      if (row.id !== undefined) {
-        row.id++;
-        row.id = String(row.id);
+    proxyEditOpen(row = {}, isClone = false) {
+      row = JSON.parse(JSON.stringify(row));
+      if (row.id !== undefined && isClone) {
+        let len = this.proxy.list.length;
+        len++;
+        row.id = String(len);
         row.local_port++;
         row.local_port = String(row.local_port);
-        this.proxy.editData = row;
       }
+      this.proxy.editData = row;
+      this.proxy.editShow = true;
+    },
+    editProxyStatus(row = { status: 1 }) {
+      let { id, status } = row;
+      this.axios.setProxyStatus(id, status);
+      setTimeout(() => {
+        this.init(this.activeNavArrow);
+      }, 300);
+      window.ELEMENT.Notification({
+        title: "提示",
+        type: "success",
+        message: "操作完成",
+      });
     },
     // 编辑代理保存
     async proxyEditSave() {
@@ -96,7 +113,6 @@ var app = new Vue({
     },
     // 白名单点击
     async whiteRemove(data = {}) {
-      console.log("点击了白名单item", data);
       let res = await this.axios.whiteDelete({
         ip: data.label,
         port: data.port,

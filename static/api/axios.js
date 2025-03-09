@@ -19,7 +19,7 @@ req.axios = async (conf) => {
     window.ELEMENT.Notification({
       title: "错误",
       message: e.response.data.msg,
-    })
+    });
   }
 };
 
@@ -52,7 +52,12 @@ const apiPath = {
   whiteListAll: "/whiteList/list/all",
   whiteAdd: "/whiteList/add",
   whiteDelete: "/whiteList/delete",
+  proxyStatusStop: "/proxy/stopPort",
+  proxyStatusStart: "/proxy/restartPort",
 };
+
+const StatusTrueEum = 1,
+  StatusFalseEum = 2;
 
 // 请求类
 class Request {
@@ -106,5 +111,16 @@ class Request {
     }
   ) {
     return req.post(this.baseUrl + apiPath.whiteDelete, data, {});
+  }
+  setProxyStatus(id = 0, thisStatus = 0) {
+    console.log(id, thisStatus);
+    switch (thisStatus) {
+      case StatusFalseEum:
+        return req.post(this.baseUrl + apiPath.proxyStatusStart, { id: id }, {});
+        break;
+      case StatusTrueEum:
+        return req.post(this.baseUrl + apiPath.proxyStatusStop, { id: id }, {});
+        break;
+    }
   }
 }
