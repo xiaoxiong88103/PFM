@@ -3,7 +3,9 @@ package proxy
 import (
 	"PFM/proxyFunc/vars"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -55,4 +57,26 @@ func InitReloadProxy() {
 		time.Sleep(1 * time.Millisecond) // 延迟1毫秒
 	}
 
+}
+
+// 重新将 停止的 转发开起来 传入id 即可
+func RestartPortForward(c *gin.Context) {
+	var req struct {
+		ID string `json:"id"`
+	}
+
+	// 解析并绑定请求体
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求格式错误", "data": nil})
+		return
+	}
+
+	id := req.ID // 获取传入的 ID
+	if rule, exists := vars.Rules[id]; exists {
+		// 重新启动转发
+		StartForwarding(rule)
+		c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "端口转发已重新启动", "data": rule})
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{"code": 1, "msg": "规则不存在", "data": nil})
+	}
 }
