@@ -95,7 +95,7 @@
                   </el-popover>
                 </template>
               </el-table-column>
-              <el-table-column label="远程端口">
+              <el-table-column label="远程端口" sortable :sort-method="remotePortSort">
                 <template slot-scope="scope">
                   <el-popover trigger="hover" placement="top">
                     <p>远程代理到本地的端口:{{ scope.row.remote_port }}</p>
@@ -105,7 +105,7 @@
                   </el-popover>
                 </template>
               </el-table-column>
-              <el-table-column label="本地端口">
+              <el-table-column label="本地端口" sortable :sort-method="localPortSort">
                 <template slot-scope="scope">
                   <el-popover trigger="hover" placement="top">
                     <p>映射到本地的数据出口: {{ scope.row.remote_port }} -> {{ scope.row.local_port }}</p>
