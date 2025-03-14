@@ -1,11 +1,10 @@
 package whiteList
 
 import (
+	"github.com/go-ini/ini"
 	"log"
 	"strconv"
 	"sync"
-
-	"github.com/go-ini/ini"
 )
 
 // 用来记录 IP 的连接次数

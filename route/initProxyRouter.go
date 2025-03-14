@@ -24,7 +24,6 @@ func ProxyRoute(r *gin.Engine) {
 	proxyRouter.POST("/stopPort", proxy.StopPortForward)
 	// 查询停止转发的接口目前暂停转发的接口
 	proxyRouter.GET("/getStopPort", proxy.GetStoppedPortForwards)
-
 	whiteListRouter := r.Group("whiteList")
 	whiteListRouter.GET("/reload", func(c *gin.Context) {
 		_ = whiteList.LoadWhiteList()
@@ -43,11 +42,11 @@ func ProxyRoute(r *gin.Engine) {
 	whiteListNumber.GET("/status", func(c *gin.Context) {
 		port := c.Query("port")
 		portNumber := whiteList.QueryConnectionCount(port)
-		c.JSON(http.StatusOK, gin.H{"port_number": portNumber})
+		c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "缺少端口号参数", "data": portNumber})
 	})
 	whiteListNumber.GET("/clear", func(c *gin.Context) {
 		port := c.Query("port")
 		whiteList.ResetConnectionCount(port)
-		c.String(200, "恭喜清理成功")
+		c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "恭喜清理成功", "data": nil})
 	})
 }

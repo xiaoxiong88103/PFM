@@ -6,3 +6,10 @@ const (
 )
 
 const WebPanelPublicPath = "./static"
+
+const (
+	UdpEum   = "udp"
+	TcpEum   = "tcp"
+	TrueEum  = 1
+	FalseEum = 2
+)

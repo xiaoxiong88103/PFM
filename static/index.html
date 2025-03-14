@@ -19,14 +19,15 @@
     <title></title>
     <script src="./js/vconsole.min.js"></script>
     <script>
-      var vConsole = new window.VConsole();
+      // vconsole 前端调试使用
+      // var vConsole = new window.VConsole();
     </script>
     <script src="./js/vue.js"></script>
     <script src="./js/axios.min.js"></script>
-    <script src="./js/elementui.js"></script>
     <script src="./api/axios.js"></script>
     <!-- <script src="./js/vant.min.js"></script> -->
-    <link rel="stylesheet" href="./css/elementui.css" />
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <link rel="stylesheet" href="./css/index.css" />
     <link rel="stylesheet" href="./css/windi.css" />
   </head>
@@ -75,14 +76,19 @@
           <div class="w-full content" v-if="activeNavArrow == 1">
             <el-table :data="proxy.list" style="width: 100%">
               <el-table-column prop="id" label="索引"> </el-table-column>
-              <el-table-column prop="type" label="转发类型:TCP/UDP">
+              <el-table-column prop="type" label="转发协议">
                 <template slot-scope="scope">
-                  <el-popover trigger="hover" placement="top">
-                    <p>转发类型:TCP协议/UDP协议</p>
-                    <div slot="reference" class="name-wrapper">
-                      <el-tag size="medium">{{ scope.row.type }}</el-tag>
-                    </div>
-                  </el-popover>
+                  <div slot="reference" class="name-wrapper">
+                    <el-tag size="medium">{{ scope.row.type.toUpperCase() }}</el-tag>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="代理状态">
+                <template slot-scope="scope">
+                  <div slot="reference" class="name-wrapper">
+                    <el-tag size="medium" type="success" v-if="scope.row.status === 1">运行中</el-tag>
+                    <el-tag size="medium" type="danger" v-else>已停止</el-tag>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column label="远程IP">
@@ -116,9 +122,12 @@
                 </template>
               </el-table-column>
               <el-table-column prop="comment" label="备注"> </el-table-column>
-              <el-table-column fixed="right" label="操作">
+              <el-table-column fixed="right" label="操作" width="330px">
                 <template slot-scope="scope">
-                  <el-button size="mini" @click="proxyEditOpen(scope.row)">克隆</el-button>
+                  <el-button size="mini" @click="proxyEditOpen(scope.row,true)">克隆</el-button>
+                  <el-button size="mini" @click="proxyEditOpen(scope.row)">编辑</el-button>
+                  <el-button size="mini" @click="editProxyStatus(scope.row)" v-if="scope.row.status === 1">停止转发</el-button>
+                  <el-button size="mini" @click="editProxyStatus(scope.row)" v-else>开启转发</el-button>
                   <el-button size="mini" type="danger" @click="proxyDelete(scope.row)">删除</el-button>
                 </template>
               </el-table-column>
@@ -158,23 +167,31 @@
           <div class="w-full content" v-else-if="activeNavArrow == 2">
             <el-tree
               :data="whiteList.list"
+              default-expand-all
               :props="{
             children: 'children',
             label: 'label'
           }"
-              @node-click="whiteClick"
-            ></el-tree>
+            >
+              <span class="custom-tree-node w-full justify-between flex" slot-scope="{ node, data }">
+                <span>{{node.label}}</span>
+                <span v-if="data.child">
+                  <el-button type="text" size="mini" @click="() => whiteEditOpen(data)"> 克隆 </el-button>
+                  <el-button type="text" size="mini" @click="() => whiteRemove(data)"> 删除 </el-button>
+                </span>
+                <span v-else>
+                  <el-button type="text" size="mini" @click="() => whiteEditOpen(data)"> 新增 </el-button>
+                </span>
+              </span>
+            </el-tree>
             <!-- 弹窗区域 -->
             <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
               <el-form :model="whiteList.editData">
-                <el-form-item label="索引id" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
+                <el-form-item label="端口" :label-width="whiteList.editData.editFormInputWidth">
+                  <el-input v-model="whiteList.editData.port" placeholder="端口号"></el-input>
                 </el-form-item>
                 <el-form-item label="IP" :label-width="whiteList.editData.editFormInputWidth">
                   <el-input v-model="whiteList.editData.ip" placeholder="IPv4/IPv6"></el-input>
-                </el-form-item>
-                <el-form-item label="备注" :label-width="whiteList.editData.editFormInputWidth">
-                  <el-input v-model="whiteList.editData.comment" placeholder="白名单备注"></el-input>
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
