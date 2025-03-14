@@ -29,3 +29,31 @@
 
 无论是主机游戏服务器、Web 服务，还是复杂的企业网络配置，**Port Forwarding Manager SSR (PFM)** 都是一个理想的工具，提供高效的端口转发管理和详细的流量分析功能，帮助你更好地掌控网络环境。
 
+# **Port Forwarding Manager SSR (PFM-SSR) 部署文档**
+
+## **系统要求**
+PFM-SSR 仅支持 **Linux/Unix** 类系统，包括但不限于：
+- Ubuntu / Debian
+- CentOS / RHEL
+- Arch Linux / Manjaro
+- FreeBSD / OpenBSD / macOS (理论支持，未测试)
+
+**注意**：Windows 系统用户请自行尝试兼容方案，例如使用 WSL2 或 Docker 运行。
+
+---
+
+## **安装步骤**
+
+### **1. 创建 PFM 目录**
+首先，确保 `/opt/PFM` 目录存在。执行以下命令创建目录并进入：
+
+```bash
+sudo mkdir -p /opt/PFM
+cd /opt/PFM
+```
+### **2. 解压 PFM **
+
+```bash
+sudo unzip linux_pfm_amd64.zip
+nohup /opt/PFM/PFM > /opt/PFM/PFM.log &
+```
