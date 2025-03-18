@@ -133,7 +133,7 @@
               </el-table-column>
             </el-table>
             <!-- 弹窗区域 -->
-            <el-dialog title="新增代理" :visible.sync="proxy.editShow" v-if="proxy.editShow">
+            <el-dialog title="新增代理" :visible.sync="proxy.editShow"  :close-on-click-modal="false">
               <el-form :model="proxy.editData">
                 <el-form-item label="索引id" :label-width="proxy.editData.editFormInputWidth">
                   <el-input v-model="proxy.editData.id" placeholder="这个索引是唯一的请不要重复"></el-input>
@@ -185,7 +185,7 @@
               </span>
             </el-tree>
             <!-- 弹窗区域 -->
-            <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" v-if="whiteList.editShow">
+            <el-dialog title="新增白名单" :visible.sync="whiteList.editShow" :close-on-click-modal="false">
               <el-form :model="whiteList.editData">
                 <el-form-item label="端口" :label-width="whiteList.editData.editFormInputWidth">
                   <el-input v-model="whiteList.editData.port" placeholder="端口号"></el-input>
