@@ -61,7 +61,6 @@ var app = new Vue({
           list.push(el);
         }
       }
-      console.log(list.sort((a, b) => Number(b.id) - Number(a.id)));
       this.proxy.list = list;
       this.proxy.editData = {
         id: "",
@@ -71,6 +70,12 @@ var app = new Vue({
         local_port: "",
         comment: "",
       };
+    },
+    remotePortSort(row, column) {
+      return Number(row.remote_port || 0) - Number(column.remote_port || 0);
+    },
+    localPortSort(row, column) {
+      return Number(row.local_port || 0) - Number(column.local_port || 0);
     },
     // 编辑代理
     proxyEditOpen(row = {}, isClone = false) {
