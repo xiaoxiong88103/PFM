@@ -30,6 +30,7 @@ func middleware() gin.HandlerFunc {
 func main() {
 	r := gin.Default()
 	r.Use(middleware())
+	Loadinit()
 	// 托管文件
 	r.Use(static.Serve("/", static.LocalFile(util.WebPanelPublicPath, true)))
 	// 初始化文件防止空指针
