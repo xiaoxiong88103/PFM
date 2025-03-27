@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func Loadinit() {
+func init() {
 	//检查config文件是否缺少
 	err := vars.CheckAndCreateFileJson(vars.ConfigFilePath)
 	if err != nil {
