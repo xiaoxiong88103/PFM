@@ -36,5 +36,9 @@ func main() {
 	proxyFunc.InitPublic()
 	//加载转发接口
 	route.ProxyRoute(r)
+	//加载白名单接口
+	route.WhiteListRoute(r)
+	//加载流量统计接口
+	route.StatisticalRoute(r)
 	r.Run(":8281")
 }

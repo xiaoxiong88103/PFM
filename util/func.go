@@ -7,14 +7,7 @@ import (
 	"runtime"
 )
 
-// 获取当前平台
-//
-// const (
-//
-//	WinPlEum   uint = 1 // windows
-//	LinuxPlEum uint = 2 // linux
-//
-// )
+// 查看当前是Linux还是Windows判断条件函数
 func ThisPlatform() (uint, error) {
 	sysType := runtime.GOOS
 	switch sysType {
@@ -26,6 +19,7 @@ func ThisPlatform() (uint, error) {
 	return 0, errors.New("not windows or linux")
 }
 
+// 初始化文件来针对Linux还是Windows划分
 func InitConfigFiles(linuxPath, windowsPath, defValue string) (string, error) {
 	fmt.Printf("linuxPath: %v\n", linuxPath)
 	fmt.Printf("windowsPath: %v\n", windowsPath)

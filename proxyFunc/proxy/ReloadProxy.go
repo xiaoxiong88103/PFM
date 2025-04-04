@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// 规则加载函数
 func LoadPortForwardingRules() (map[string]vars.PortForwardingRule, error) {
 	vars.Rules = make(map[string]vars.PortForwardingRule)
 	file, err := os.Open(vars.ConfigFilePath)

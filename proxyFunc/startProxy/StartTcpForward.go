@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -57,10 +59,19 @@ func StartTCPForward(rule vars.PortForwardingRule) {
 	}
 }
 
-// 处理tcp转发逻辑
+// 处理 TCP 转发连接（带详细日志）
 func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 	defer clientConn.Close()
 
+	startTime := time.Now()
+	startStr := startTime.Format("2006-01-02 15:04:05")
+	clientAddr := clientConn.RemoteAddr().String()
+
+	// 打印连接建立日志
+	log.Printf("[连接建立] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s",
+		startStr, rule.LocalPort, clientAddr, rule.RemoteIP, rule.RemotePort)
+
+	// ================= 连接远程端 ====================
 	var remoteConn net.Conn
 	var err error
 	for i := 0; i < 100; i++ {
@@ -68,15 +79,57 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 		if err == nil {
 			break
 		}
-		log.Printf("连接到远程地址 %s:%s 失败 (第 %d 次重试): %v", rule.RemoteIP, rule.RemotePort, i+1, err)
+		log.Printf("连接远程失败 %s:%s (第 %d 次): %v", rule.RemoteIP, rule.RemotePort, i+1, err)
 		time.Sleep(time.Duration((i+1)*100) * time.Millisecond)
 	}
 	if err != nil {
-		log.Printf("连接到远程地址 %s:%s 失败，超过最大重试次数: %v", rule.RemoteIP, rule.RemotePort, err)
+		log.Printf("连接远程失败超限，终止连接: %v", err)
 		return
 	}
 	defer remoteConn.Close()
 
-	go io.Copy(remoteConn, clientConn)
-	io.Copy(clientConn, remoteConn)
+	// ================= 开始转发 ====================
+	var upBytes, downBytes int64
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// 客户端 → 远程（上行）
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("上行转发异常恢复: %v", r)
+			}
+			wg.Done()
+		}()
+		n, _ := io.Copy(remoteConn, clientConn)
+		atomic.AddInt64(&upBytes, n)
+	}()
+
+	// 远程 → 客户端（下行）
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("下行转发异常恢复: %v", r)
+			}
+			wg.Done()
+		}()
+		n, _ := io.Copy(clientConn, remoteConn)
+		atomic.AddInt64(&downBytes, n)
+	}()
+
+	// 等待转发完成
+	wg.Wait()
+
+	// ================= 打印关闭日志 ====================
+	duration := time.Since(startTime)
+	log.Printf("[连接关闭] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s | 用时: %s | 上行: %dB | 下行: %dB | 总: %dB",
+		time.Now().Format("2006-01-02 15:04:05"),
+		rule.LocalPort,
+		clientAddr,
+		rule.RemoteIP, rule.RemotePort,
+		duration,
+		upBytes, downBytes, upBytes+downBytes)
+
+	// 累加全局端口统计
+	UpdatePortTraffic(rule.LocalPort, upBytes, downBytes)
 }
