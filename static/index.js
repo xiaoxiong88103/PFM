@@ -3,6 +3,7 @@ var app = new Vue({
   el: "#app",
   data: {
     axios: new Request("http://" + window.location.hostname + ":8281"),
+    // axios: new Request("http://aws.xiaoxiong.host:8281"),
     activeNavArrow: "0",
     // 代理配置
     proxy: {
@@ -28,6 +29,9 @@ var app = new Vue({
       },
       editFormInputWidth: "120px",
     },
+    // 转发流量统计
+    tcpProxyTrafficStats: {},
+    
   },
   methods: {
     // 切换导航
@@ -71,6 +75,8 @@ var app = new Vue({
         local_port: "",
         comment: "",
       };
+      // 刷新流量实时数据
+      this.loadTcpTrafficStats();
     },
     // 编辑代理
     proxyEditOpen(row = {}, isClone = false) {
@@ -143,6 +149,7 @@ var app = new Vue({
         };
       }
     },
+    // 加载白名单数据
     async whiteLoad(isRestful = 2) {
       if (isRestful === 1) {
         window.ELEMENT.Notification({
@@ -169,12 +176,18 @@ var app = new Vue({
         ip: "",
       };
     },
+    // 白名单编辑保存
     async whiteEditSave() {
       this.whiteList.editShow = false;
       await this.axios.whiteAdd(this.whiteList.editData);
       setTimeout(() => {
         this.init(this.activeNavArrow);
       }, 300);
+    },
+    // 加载tcp流量状态
+    async loadTcpTrafficStats() {
+      let data = await this.axios.tcpTrafficStats();
+      this.tcpProxyTrafficStats = data;
     },
     // 初始化
     async init(arrow = 1) {
@@ -184,6 +197,11 @@ var app = new Vue({
       if (arrow == 2) {
         this.whiteLoad();
       }
+      // 初始化代理流量抓取代理数据
+      this.loadTcpTrafficStats();
+      setInterval(() => {
+        this.loadTcpTrafficStats();
+      }, 1000 * 30);
     },
   },
   async mounted() {

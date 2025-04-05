@@ -54,6 +54,8 @@ const apiPath = {
   whiteDelete: "/whiteList/delete",
   proxyStatusStop: "/proxy/stopPort",
   proxyStatusStart: "/proxy/restartPort",
+  // 流量
+  tcpTrafficStats: "/tcp/stats",
 };
 
 const StatusTrueEum = 1,
@@ -122,5 +124,8 @@ class Request {
         return req.post(this.baseUrl + apiPath.proxyStatusStop, { id: id }, {});
         break;
     }
+  }
+  tcpTrafficStats() {
+    return req.get(this.baseUrl + apiPath.tcpTrafficStats, {}, {});
   }
 }
