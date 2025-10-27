@@ -1,9 +1,9 @@
 package startProxy
 
 import (
+	"PFM/proxyFunc/LogsWrite"
 	"PFM/proxyFunc/vars"
 	"PFM/proxyFunc/whiteList"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -16,7 +16,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 	// 创建本地 UDP 监听器
 	localConn, err := net.ListenPacket("udp", ":"+rule.LocalPort)
 	if err != nil {
-		log.Printf("无法监听本地 UDP 地址 %s: %v", rule.LocalPort, err)
+		LogsWrite.Logf("无法监听本地 UDP 地址 %s: %v", rule.LocalPort, err)
 		return
 	}
 	vars.UdpConnsMu.Lock()
@@ -29,7 +29,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 		delete(vars.UdpConns, rule.ID)
 		vars.UdpConnsMu.Unlock()
 	}()
-	log.Printf("UDP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
+	LogsWrite.Logf("UDP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
 	clientToRemote := sync.Map{}
 	lastActivity := sync.Map{}
 	stopChannel := make(chan struct{}) // 用于优雅关闭
@@ -47,7 +47,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 				lastActivity.Range(func(key, value interface{}) bool {
 					if lastTime, ok := value.(int64); ok && currentTime-lastTime > 60 {
 						if conn, exists := clientToRemote.Load(key); exists {
-							log.Printf("连接超时，关闭 UDP 连接: %s", key)
+							LogsWrite.Logf("连接超时，关闭 UDP 连接: %s", key)
 							conn.(net.Conn).Close()
 							clientToRemote.Delete(key)
 							lastActivity.Delete(key)
@@ -73,11 +73,11 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 		n, clientAddr, err := localConn.ReadFrom(buffer)
 		if err != nil {
 			if IsClosedConnErr(err) {
-				log.Printf("本地 UDP 连接已关闭: %s", rule.LocalPort)
+				LogsWrite.Logf("本地 UDP 连接已关闭: %s", rule.LocalPort)
 				bufferPool.Put(buffer)
 				return
 			}
-			log.Printf("读取本地 UDP 连接失败: %v", err)
+			LogsWrite.Logf("读取本地 UDP 连接失败: %v", err)
 			bufferPool.Put(buffer)
 			continue
 		}
@@ -88,7 +88,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 		clientIP, _, _ := net.SplitHostPort(clientKey)
 		// 校验 IP 是否在白名单中
 		if !whiteList.IsIPAllowed(rule.LocalPort, clientIP) {
-			log.Printf("拒绝连接，客户端 IP %s 不在端口 %s 的白名单中", clientIP, rule.LocalPort)
+			LogsWrite.Logf("拒绝连接，客户端 IP %s 不在端口 %s 的白名单中", clientIP, rule.LocalPort)
 			bufferPool.Put(buffer)
 			continue
 		}
@@ -99,7 +99,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 			// 如果没有现有的连接，则建立到远程的连接
 			remoteConn, err = net.Dial("udp", net.JoinHostPort(rule.RemoteIP, rule.RemotePort))
 			if err != nil {
-				log.Printf("无法连接远程 UDP 地址 %s:%s: %v", rule.RemoteIP, rule.RemotePort, err)
+				LogsWrite.Logf("无法连接远程 UDP 地址 %s:%s: %v", rule.RemoteIP, rule.RemotePort, err)
 				bufferPool.Put(buffer)
 				continue
 			}
@@ -116,7 +116,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 				for {
 					n, err := remoteConn.Read(remoteBuffer)
 					if err != nil {
-						log.Printf("读取远程 UDP 连接失败: %v", err)
+						LogsWrite.Logf("读取远程 UDP 连接失败: %v", err)
 						clientToRemote.Delete(clientKey)
 						lastActivity.Delete(clientKey)
 						return
@@ -124,7 +124,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 
 					_, err = localConn.WriteTo(remoteBuffer[:n], clientAddr)
 					if err != nil {
-						log.Printf("写入本地 UDP 连接失败: %v", err)
+						LogsWrite.Logf("写入本地 UDP 连接失败: %v", err)
 					}
 
 					lastActivity.Store(clientKey, time.Now().Unix())
@@ -134,7 +134,7 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 
 		_, err = remoteConn.(net.Conn).Write(buffer[:n])
 		if err != nil {
-			log.Printf("写入远程 UDP 连接失败: %v", err)
+			LogsWrite.Logf("写入远程 UDP 连接失败: %v", err)
 			clientToRemote.Delete(clientKey)
 			lastActivity.Delete(clientKey)
 			remoteConn.(net.Conn).Close()
@@ -148,6 +148,6 @@ func StartUDPForward(rule vars.PortForwardingRule) {
 // handlePanic 用于捕获和记录 panic，以确保 goroutine 崩溃不会影响主进程
 func handlePanic(funcName, ruleID string) {
 	if r := recover(); r != nil {
-		log.Printf("端口转发规则 %s 在 %s 中发生崩溃: %v", ruleID, funcName, r)
+		LogsWrite.Logf("端口转发规则 %s 在 %s 中发生崩溃: %v", ruleID, funcName, r)
 	}
 }

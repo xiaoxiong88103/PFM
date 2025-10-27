@@ -1,23 +1,22 @@
 package startProxy
 
 import (
+	"PFM/proxyFunc/LogsWrite"
 	"PFM/proxyFunc/vars"
 	"PFM/proxyFunc/whiteList"
 	"io"
-	"log"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
-// 开启tcp规则转发
+// 启动 TCP 转发规则
 func StartTCPForward(rule vars.PortForwardingRule) {
-
 	// 尝试监听本地端口
 	listener, err := net.Listen("tcp", ":"+rule.LocalPort)
 	if err != nil {
-		log.Printf("无法监听本地地址 %s: %v", rule.LocalPort, err)
+		LogsWrite.Logf("无法监听本地地址 %s: %v", rule.LocalPort, err)
 		return
 	}
 
@@ -34,15 +33,16 @@ func StartTCPForward(rule vars.PortForwardingRule) {
 		vars.TcpListenersMu.Unlock()
 	}()
 
-	log.Printf("TCP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
+	LogsWrite.Logf("TCP 转发启动: %s -> %s:%s", rule.LocalPort, rule.RemoteIP, rule.RemotePort)
+
 	for {
 		clientConn, err := listener.Accept()
 		if err != nil {
 			if IsClosedConnErr(err) {
-				log.Printf("TCP 监听器已关闭: %s", rule.LocalPort)
+				LogsWrite.Logf("TCP 监听器已关闭: %s", rule.LocalPort)
 				return
 			}
-			log.Printf("接受客户端连接失败: %v", err)
+			LogsWrite.Logf("接受客户端连接失败: %v", err)
 			continue
 		}
 
@@ -50,7 +50,7 @@ func StartTCPForward(rule vars.PortForwardingRule) {
 		clientAddr := clientConn.RemoteAddr().(*net.TCPAddr).IP.String()
 		// 校验 IP 是否在白名单中
 		if !whiteList.IsIPAllowed(rule.LocalPort, clientAddr) {
-			log.Printf("拒绝连接，客户端IP %s 不在端口 %s 的白名单中", clientAddr, rule.LocalPort)
+			LogsWrite.Logf("拒绝连接，客户端 IP %s 不在端口 %s 的白名单中", clientAddr, rule.LocalPort)
 			clientConn.Close()
 			continue
 		}
@@ -67,8 +67,7 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 	startStr := startTime.Format("2006-01-02 15:04:05")
 	clientAddr := clientConn.RemoteAddr().String()
 
-	// 打印连接建立日志
-	log.Printf("[连接建立] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s",
+	LogsWrite.Logf("[连接建立] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s",
 		startStr, rule.LocalPort, clientAddr, rule.RemoteIP, rule.RemotePort)
 
 	// ================= 连接远程端 ====================
@@ -79,11 +78,11 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 		if err == nil {
 			break
 		}
-		log.Printf("连接远程失败 %s:%s (第 %d 次): %v", rule.RemoteIP, rule.RemotePort, i+1, err)
+		LogsWrite.Logf("连接远程失败 %s:%s (第 %d 次): %v", rule.RemoteIP, rule.RemotePort, i+1, err)
 		time.Sleep(time.Duration((i+1)*100) * time.Millisecond)
 	}
 	if err != nil {
-		log.Printf("连接远程失败超限，终止连接: %v", err)
+		LogsWrite.Logf("连接远程失败超限，终止连接: %v", err)
 		return
 	}
 	defer remoteConn.Close()
@@ -97,7 +96,7 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("上行转发异常恢复: %v", r)
+				LogsWrite.Logf("上行转发异常恢复: %v", r)
 			}
 			wg.Done()
 		}()
@@ -109,7 +108,7 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("下行转发异常恢复: %v", r)
+				LogsWrite.Logf("下行转发异常恢复: %v", r)
 			}
 			wg.Done()
 		}()
@@ -122,10 +121,9 @@ func handleTCPConnection(clientConn net.Conn, rule vars.PortForwardingRule) {
 
 	// ================= 打印关闭日志 ====================
 	duration := time.Since(startTime)
-	log.Printf("[连接关闭] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s | 用时: %s | 上行: %dB | 下行: %dB | 总: %dB",
+	LogsWrite.Logf("[连接关闭] 时间: %s | 本地端口: %s | 客户端: %s | 目标: %s:%s | 用时: %s | 上行: %dB | 下行: %dB | 总: %dB",
 		time.Now().Format("2006-01-02 15:04:05"),
-		rule.LocalPort,
-		clientAddr,
+		rule.LocalPort, clientAddr,
 		rule.RemoteIP, rule.RemotePort,
 		duration,
 		upBytes, downBytes, upBytes+downBytes)
